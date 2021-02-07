@@ -146,6 +146,9 @@ class TheBigGame {
     hits = 0;
     shipSpeed = 1;
     MAX_LIFE = 10;
+    WIN_STAGE = 20;
+    win = false;
+    lose = false;
 
     constructor(canvas, textInput, excersizeText) {
         this.canvas = canvas;
@@ -155,6 +158,10 @@ class TheBigGame {
         this.gameStage = new GameStage();
         this.lifeLeft = this.MAX_LIFE;
         this.excersizeText = excersizeText;
+        this.winImage = new Image();
+        this.winImage.src = './assets/win.jpg';
+        this.loseImage = new Image();
+        this.loseImage.src = './assets/lose.jpg';
     }
 
     startGame() {
@@ -166,9 +173,11 @@ class TheBigGame {
         setInterval(function () {
             // here this is the function
             if (!self.running) {
-                if (this.lifeLeft === 0) {
+                if (self.lose) {
                     self.gameOver();
-                } else {
+                } else if (self.win) {
+                    self.gameWon() }
+                else {
                     self.showStage();
                 }
                 return;
@@ -280,10 +289,13 @@ class TheBigGame {
             this.textInput.value = '';
             this.hits++;
             this.setExcersize();
-            if (this.hits === 5) {
+            if (this.hits === 10) {
                 this.hits = 0;
                 this.running = false;
                 this.gameStage.stageUp();
+                if (this.gameStage.stage > WIN_STAGE) {
+                    this.gameWon();
+                }
             }
         }
     }
@@ -298,10 +310,19 @@ class TheBigGame {
     gameOver(){
         let ctx = this.canvas.getContext("2d");
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        ctx.font = "50px Arial";
-        ctx.fillText(`GAME OVER`, this.canvas.width / 2, this.canvas.height / 2)
+        ctx.drawImage(this.loseImage, 0, 0, this.canvas.width, this.canvas.height);
         this.lifeLeft = this.MAX_LIFE;
         this.gameStage = new GameStage();
+        this.lose = true;
+    }
+
+    gameWon() {
+        let ctx = this.canvas.getContext("2d");
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.drawImage(this.winImage, 0, 0, this.canvas.width, this.canvas.height);
+        this.lifeLeft = this.MAX_LIFE;
+        this.gameStage = new GameStage();
+        this.win = true;
     }
 
     setExcersize() {
@@ -322,6 +343,7 @@ function startTheBigGame() {
         return;
     }
 
+    document.getElementById('explaination').style.display = 'none';
     const canvas = document.getElementById('myCanvas');
     const userInput = document.getElementById('answer');
     const excersizeText = document.getElementById('excersize');
