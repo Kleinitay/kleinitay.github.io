@@ -121,11 +121,11 @@ class GameStage {
 
     stageUp() {
         this.stage++;
-        if (this.maxNumber > 11 || this.stage % 3 === 0) {
-            this.speed++;
-        } else {
+        if (this.maxNumber < 11) {
             this.maxNumber++;
             this.shipsSize = this.maxSize / this.stage;
+        } else if (this.stage % 3 === 0) {
+            this.speed++;
         }
     }
 }
@@ -322,6 +322,7 @@ class TheBigGame {
         ctx.drawImage(this.winImage, 0, 0, this.canvas.width, this.canvas.height);
         this.lifeLeft = this.MAX_LIFE;
         this.gameStage = new GameStage();
+        this.running = false;
         this.win = true;
     }
 
