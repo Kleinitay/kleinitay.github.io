@@ -2075,7 +2075,6 @@ const GameApp = {
       for (let d = 1; d <= 9; d++) {
         html += `<button class="numpad-btn" onclick="GameApp.numpadInput('${d}')" aria-label="${d}">${d}</button>`;
       }
-      html += `<button class="numpad-btn btn-skip-q" onclick="GameApp.skipQuestion()" aria-label="דלג על שאלה">דלג</button>`;
       html += `<button class="numpad-btn" onclick="GameApp.numpadInput('0')" aria-label="0">0</button>`;
       html += `<button class="numpad-btn btn-backspace" onclick="GameApp.numpadInput('back')" aria-label="מחק">⌫</button>`;
       html += `<button class="numpad-btn btn-confirm" onclick="GameApp.numpadInput('confirm')" aria-label="אשר תשובה">✓</button>`;
@@ -2422,7 +2421,6 @@ const GameApp = {
     for (let d = 1; d <= 9; d++) {
       html += `<button class="numpad-btn" onclick="GameApp.speedNumpadInput('${d}')" aria-label="${d}">${d}</button>`;
     }
-    html += `<button class="numpad-btn btn-skip-q" onclick="GameApp.speedSkip()" aria-label="דלג">דלג</button>`;
     html += `<button class="numpad-btn" onclick="GameApp.speedNumpadInput('0')" aria-label="0">0</button>`;
     html += `<button class="numpad-btn btn-backspace" onclick="GameApp.speedNumpadInput('back')" aria-label="מחק">⌫</button>`;
     html += `<button class="numpad-btn btn-confirm" onclick="GameApp.numpadInput('confirm')" aria-label="אשר תשובה">✓</button>`;
@@ -2630,7 +2628,6 @@ const GameApp = {
       for (let d = 1; d <= 9; d++) {
         html += `<button class="numpad-btn" onclick="GameApp.numpadInput('${d}')" aria-label="${d}">${d}</button>`;
       }
-      html += `<button class="numpad-btn btn-skip-q" onclick="GameApp.skipQuestion()" aria-label="דלג">דלג</button>`;
       html += `<button class="numpad-btn" onclick="GameApp.numpadInput('0')" aria-label="0">0</button>`;
       html += `<button class="numpad-btn btn-backspace" onclick="GameApp.numpadInput('back')" aria-label="מחק">⌫</button>`;
       html += `<button class="numpad-btn btn-confirm" onclick="GameApp.numpadInput('confirm')" aria-label="אשר תשובה">✓</button>`;
