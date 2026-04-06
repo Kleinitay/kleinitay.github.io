@@ -1493,6 +1493,7 @@ const STATE = {
   recentQuestions: [],
   stageQuestions: [],
   stageQIdx: 0,
+  currentInput: '',
   currentStageType: null,
   matchState: null,
   speedState: null,
@@ -2034,12 +2035,18 @@ const GameApp = {
   numpadInput(val) {
     const type = STATE.currentStageType;
     if (type === 'D') { GameApp.speedNumpadInput(val); return; }
-    if (type === 'B' || type === 'E' || type === 'BOSS') return;
+    if (type === 'B' || type === 'E') return;
 
     if (val === 'back') {
-      STATE.currentInput = STATE.currentInput.slice(0, -1);
+      STATE.currentInput = (STATE.currentInput || '').slice(0, -1);
     } else if (val === 'confirm') {
-      GameApp.submitAnswer();
+      if (type === 'BOSS') {
+        const input = parseInt(STATE.currentInput);
+        if (isNaN(input)) { GameApp.showToast("הכנס מספר קודם! 🔢"); return; }
+        GameApp.submitBossAnswer(input);
+      } else {
+        GameApp.submitAnswer();
+      }
       return;
     } else {
       if (STATE.currentInput.length < 3) {
