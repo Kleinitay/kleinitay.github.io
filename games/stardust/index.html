@@ -1087,6 +1087,69 @@
     padding: 16px 32px;
     border: 3px solid var(--stardust);
   }
+
+  /* transform-box for SVG animations */
+  #gate-planks-left, #gate-planks-right, #gate-lock, .scene-flower,
+  #bridge-gap, #flower-group-1, #flower-group-2, #flower-group-3 {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  /* Lumi pass-through */
+  @keyframes lumiPassThrough {
+    0%   { transform: translateX(0) scaleX(1); opacity: 1; }
+    50%  { transform: translateX(60px) scaleX(0.8); opacity: 1; }
+    80%  { transform: translateX(100px) scaleX(0.5); opacity: 0.5; }
+    100% { transform: translateX(140px) scaleX(0.2); opacity: 0; }
+  }
+  .lumi-pass { animation: lumiPassThrough 1.3s ease-in forwards !important; }
+
+  /* Gate opens */
+  @keyframes gateOpenLeft {
+    0%   { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(-28px); opacity: 0; }
+  }
+  @keyframes gateOpenRight {
+    0%   { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(28px); opacity: 0; }
+  }
+  @keyframes lockPop {
+    0%   { transform: scale(1); opacity: 1; }
+    50%  { transform: scale(1.4) rotate(20deg); }
+    100% { transform: scale(0); opacity: 0; }
+  }
+  .gate-opening #gate-planks-left  { animation: gateOpenLeft 0.5s ease-in 0.15s forwards; }
+  .gate-opening #gate-planks-right { animation: gateOpenRight 0.5s ease-in 0.15s forwards; }
+  .gate-opening #gate-lock         { animation: lockPop 0.35s ease-in forwards; }
+
+  /* Bridge gap fills */
+  @keyframes bridgeGapFill {
+    0%   { opacity: 1; transform: scaleX(1); }
+    100% { opacity: 0; transform: scaleX(0); }
+  }
+  .bridge-solving #bridge-gap { animation: bridgeGapFill 0.5s ease forwards; }
+
+  /* Flowers collect */
+  @keyframes flowerCollect {
+    0%   { transform: scale(1) translate(0,0); opacity: 1; }
+    70%  { transform: scale(0.4) translate(-40px, 15px); opacity: 0.7; }
+    100% { transform: scale(0) translate(-70px, 25px); opacity: 0; }
+  }
+  .scene-correct .scene-flower { animation: flowerCollect 0.7s ease forwards; }
+  .scene-correct .scene-flower:nth-of-type(1) { animation-delay: 0.1s; }
+  .scene-correct .scene-flower:nth-of-type(2) { animation-delay: 0.25s; }
+  .scene-correct .scene-flower:nth-of-type(3) { animation-delay: 0.4s; }
+  .scene-correct .scene-flower:nth-of-type(4) { animation-delay: 0.15s; }
+
+  /* Flower groups burst */
+  @keyframes groupBurst {
+    0%   { transform: scale(1); opacity: 1; }
+    50%  { transform: scale(1.5) rotate(20deg); }
+    100% { transform: scale(0); opacity: 0; }
+  }
+  .scene-correct #flower-group-1 { animation: groupBurst 0.7s ease 0.1s forwards; }
+  .scene-correct #flower-group-2 { animation: groupBurst 0.7s ease 0.25s forwards; }
+  .scene-correct #flower-group-3 { animation: groupBurst 0.7s ease 0.4s forwards; }
 </style>
 </head>
 <body>
@@ -1499,7 +1562,8 @@ const STATE = {
   speedState: null,
   bossHealth: 3,
   totalWrong: 0,
-  hintsUsed: 0
+  hintsUsed: 0,
+  currentCtxIdx: 0
 };
 
 // ===========================
@@ -1948,7 +2012,9 @@ const GameApp = {
     // Lumi character + world scene
     const worldIdx = (STATE.currentWorld.id - 1);
     const contexts = CONFIG.questionContexts[worldIdx];
-    const ctx = contexts[Math.floor(Math.random() * contexts.length)];
+    const ctxIdx = Math.floor(Math.random() * contexts.length);
+    STATE.currentCtxIdx = ctxIdx;
+    const ctx = contexts[ctxIdx];
 
     html += `<div class="scene-row">
       <div class="lumi-container walking" id="lumi-anim">
@@ -1980,7 +2046,7 @@ const GameApp = {
         </svg>
       </div>
       <div class="scene-illustration">
-        ${GameApp.getWorldScene(STATE.currentWorld.id, type)}
+        ${GameApp.getWorldScene(STATE.currentWorld.id, type, ctxIdx)}
       </div>
     </div>`;
 
@@ -2090,15 +2156,25 @@ const GameApp = {
     GameApp.showBurst();
     const praise = CONFIG.praiseMessages[Math.floor(Math.random() * CONFIG.praiseMessages.length)];
     GameApp.showFeedback(praise, true);
-
-    const lumi = document.getElementById('lumi-anim');
-    if (lumi) { lumi.classList.remove('wiggle', 'droop'); void lumi.offsetWidth; lumi.classList.add('wiggle'); }
-
     if (STATE.timer) clearInterval(STATE.timer);
 
-    setTimeout(() => {
-      GameApp.nextQuestion();
-    }, 900);
+    // Lumi pass-through animation
+    const lumi = document.getElementById('lumi-anim');
+    const scene = document.querySelector('.scene-illustration');
+    if (lumi) {
+      lumi.classList.remove('wiggle', 'droop', 'walking');
+      void lumi.offsetWidth;
+      lumi.classList.add('lumi-pass');
+    }
+    if (scene) {
+      const w = STATE.currentWorld ? STATE.currentWorld.id : 0;
+      const c = STATE.currentCtxIdx || 0;
+      if (w === 1 && c === 1) scene.classList.add('gate-opening');
+      else if (w === 1 && c === 0) scene.classList.add('bridge-solving');
+      else scene.classList.add('scene-correct');
+    }
+
+    setTimeout(() => GameApp.nextQuestion(), 1400);
   },
 
   onWrong(q) {
@@ -2739,113 +2815,241 @@ const GameApp = {
   },
 
   // ===== WORLD SCENE ILLUSTRATIONS =====
-  getWorldScene(worldId, stageType) {
-    const scenes = {
-      1: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  getWorldScene(worldId, stageType, ctxIdx = 0) {
+    // World 1 — ctx 0: Bridge with flowers, ctx 1: Locked gate (default), ctx 2: Flower groups
+    const world1 = [
+      // ctx 0 — Bridge
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Sky -->
+        <rect x="0" y="0" width="120" height="120" fill="#d4f5e0"/>
+        <!-- River -->
+        <rect x="0" y="80" width="120" height="40" fill="#4facfe" opacity="0.55"/>
+        <path d="M0,82 Q20,78 40,82 Q60,86 80,82 Q100,78 120,82" stroke="#87CEEB" stroke-width="2" fill="none"/>
+        <!-- Left bridge section -->
+        <g id="bridge-left">
+          <rect x="0" y="72" width="42" height="14" rx="3" fill="#8B7355"/>
+          <rect x="2" y="72" width="18" height="14" rx="2" fill="#9E8463"/>
+          <rect x="22" y="72" width="18" height="14" rx="2" fill="#9E8463"/>
+          <rect x="4" y="68" width="8" height="6" rx="2" fill="#8B7355"/>
+          <rect x="16" y="68" width="8" height="6" rx="2" fill="#8B7355"/>
+          <rect x="28" y="68" width="8" height="6" rx="2" fill="#8B7355"/>
+        </g>
+        <!-- Bridge gap -->
+        <g id="bridge-gap">
+          <rect x="43" y="71" width="34" height="16" rx="3" fill="none" stroke="#FFE97A" stroke-width="2.5" stroke-dasharray="5,4"/>
+          <text x="60" y="82" font-size="9" text-anchor="middle" fill="#FFE97A" font-weight="bold">?</text>
+        </g>
+        <!-- Right bridge section -->
+        <g id="bridge-right">
+          <rect x="78" y="72" width="42" height="14" rx="3" fill="#8B7355"/>
+          <rect x="80" y="72" width="18" height="14" rx="2" fill="#9E8463"/>
+          <rect x="100" y="72" width="18" height="14" rx="2" fill="#9E8463"/>
+          <rect x="82" y="68" width="8" height="6" rx="2" fill="#8B7355"/>
+          <rect x="94" y="68" width="8" height="6" rx="2" fill="#8B7355"/>
+          <rect x="106" y="68" width="8" height="6" rx="2" fill="#8B7355"/>
+        </g>
+        <!-- Flowers near bridge -->
+        <line x1="12" y1="72" x2="12" y2="64" stroke="#4CAF50" stroke-width="2"/>
+        <circle class="scene-flower" id="sf-1" cx="12" cy="62" r="7" fill="#FFB3DE"/>
+        <circle cx="12" cy="62" r="4" fill="#FFE97A"/>
+        <line x1="24" y1="72" x2="24" y2="63" stroke="#4CAF50" stroke-width="2"/>
+        <circle class="scene-flower" id="sf-2" cx="24" cy="61" r="6" fill="#C8AAFF"/>
+        <circle cx="24" cy="61" r="3" fill="#FFE97A"/>
+        <line x1="100" y1="72" x2="100" y2="64" stroke="#4CAF50" stroke-width="2"/>
+        <circle class="scene-flower" id="sf-3" cx="100" cy="62" r="7" fill="#A8EDBB"/>
+        <circle cx="100" cy="62" r="4" fill="#FFE97A"/>
+        <!-- Path leading to bridge -->
+        <rect x="50" y="86" width="20" height="34" fill="#c8a96e" opacity="0.5"/>
+      </svg>`,
+      // ctx 1 — Locked gate (original, with IDs)
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
         <!-- Ground -->
         <rect x="0" y="95" width="120" height="25" rx="4" fill="#A8EDBB"/>
         <!-- Gate posts -->
-        <rect x="18" y="38" width="14" height="60" rx="5" fill="#8B5E3C"/>
-        <rect x="88" y="38" width="14" height="60" rx="5" fill="#8B5E3C"/>
-        <!-- Crossbar top -->
-        <rect x="16" y="38" width="88" height="12" rx="5" fill="#A0723A"/>
+        <g id="gate-posts">
+          <rect x="18" y="38" width="14" height="60" rx="5" fill="#8B5E3C"/>
+          <rect x="88" y="38" width="14" height="60" rx="5" fill="#8B5E3C"/>
+          <rect x="16" y="38" width="88" height="12" rx="5" fill="#A0723A"/>
+        </g>
         <!-- Gate planks left half -->
-        <rect x="22" y="52" width="34" height="10" rx="3" fill="#C8935A"/>
-        <rect x="22" y="65" width="34" height="10" rx="3" fill="#C8935A"/>
-        <rect x="22" y="78" width="34" height="10" rx="3" fill="#C8935A"/>
+        <g id="gate-planks-left">
+          <rect x="22" y="52" width="34" height="10" rx="3" fill="#C8935A"/>
+          <rect x="22" y="65" width="34" height="10" rx="3" fill="#C8935A"/>
+          <rect x="22" y="78" width="34" height="10" rx="3" fill="#C8935A"/>
+          <line x1="22" y1="52" x2="56" y2="88" stroke="#A0723A" stroke-width="3" stroke-linecap="round"/>
+        </g>
         <!-- Gate planks right half -->
-        <rect x="64" y="52" width="34" height="10" rx="3" fill="#C8935A"/>
-        <rect x="64" y="65" width="34" height="10" rx="3" fill="#C8935A"/>
-        <rect x="64" y="78" width="34" height="10" rx="3" fill="#C8935A"/>
-        <!-- Diagonal brace left -->
-        <line x1="22" y1="52" x2="56" y2="88" stroke="#A0723A" stroke-width="3" stroke-linecap="round"/>
-        <!-- Diagonal brace right -->
-        <line x1="98" y1="52" x2="64" y2="88" stroke="#A0723A" stroke-width="3" stroke-linecap="round"/>
-        <!-- Latch -->
-        <rect x="53" y="64" width="14" height="8" rx="3" fill="#FFD700"/>
-        <circle cx="60" cy="68" r="3" fill="#FFA500"/>
-        <!-- Sparkles on latch -->
-        <text x="54" y="60" font-size="12" text-anchor="middle" fill="#FFE97A">✦</text>
-        <text x="66" y="58" font-size="8" text-anchor="middle" fill="#FFD700">✦</text>
+        <g id="gate-planks-right">
+          <rect x="64" y="52" width="34" height="10" rx="3" fill="#C8935A"/>
+          <rect x="64" y="65" width="34" height="10" rx="3" fill="#C8935A"/>
+          <rect x="64" y="78" width="34" height="10" rx="3" fill="#C8935A"/>
+          <line x1="98" y1="52" x2="64" y2="88" stroke="#A0723A" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <!-- Padlock on gate -->
+        <rect id="gate-lock" x="51" y="60" width="18" height="14" rx="4" fill="#FFD700"/>
+        <path d="M54,60 Q54,52 60,52 Q66,52 66,60" stroke="#E8A000" stroke-width="3" fill="none"/>
+        <circle cx="60" cy="67" r="3" fill="#E8A000"/>
         <!-- Flowers left -->
-        <circle cx="10" cy="88" r="9" fill="#FFB3DE"/>
-        <circle cx="10" cy="88" r="5" fill="#FFE97A"/>
-        <circle cx="10" cy="79" r="7" fill="#FF8EC0"/>
-        <circle cx="10" cy="79" r="4" fill="#FFE97A"/>
-        <!-- Stem left -->
-        <line x1="10" y1="88" x2="10" y2="97" stroke="#4CAF50" stroke-width="2.5"/>
+        <line x1="10" y1="95" x2="10" y2="88" stroke="#4CAF50" stroke-width="2.5"/>
+        <circle class="scene-flower" id="sf-1" cx="10" cy="86" r="8" fill="#FFB3DE"/>
+        <circle cx="10" cy="86" r="4" fill="#FFE97A"/>
+        <circle class="scene-flower" id="sf-2" cx="10" cy="77" r="6" fill="#FF8EC0"/>
+        <circle cx="10" cy="77" r="3" fill="#FFE97A"/>
         <!-- Flowers right -->
-        <circle cx="110" cy="88" r="9" fill="#C8AAFF"/>
-        <circle cx="110" cy="88" r="5" fill="#FFE97A"/>
-        <circle cx="110" cy="79" r="7" fill="#9b5de5"/>
-        <circle cx="110" cy="79" r="4" fill="#FFE97A"/>
-        <line x1="110" y1="88" x2="110" y2="97" stroke="#4CAF50" stroke-width="2.5"/>
-        <!-- More flowers -->
-        <circle cx="4" cy="93" r="6" fill="#FFE97A"/>
-        <circle cx="4" cy="93" r="3" fill="#FF8C00"/>
-        <circle cx="116" cy="93" r="6" fill="#A8EDBB"/>
-        <circle cx="116" cy="93" r="3" fill="#2D8A5A"/>
+        <line x1="110" y1="95" x2="110" y2="88" stroke="#4CAF50" stroke-width="2.5"/>
+        <circle class="scene-flower" id="sf-3" cx="110" cy="86" r="8" fill="#C8AAFF"/>
+        <circle cx="110" cy="86" r="4" fill="#FFE97A"/>
+        <circle class="scene-flower" id="sf-4" cx="110" cy="77" r="6" fill="#9b5de5"/>
+        <circle cx="110" cy="77" r="3" fill="#FFE97A"/>
       </svg>`,
+      // ctx 2 — Flower groups
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Grass -->
+        <rect x="0" y="90" width="120" height="30" rx="4" fill="#A8EDBB"/>
+        <path d="M0,90 Q20,86 40,90 Q60,94 80,90 Q100,86 120,90" fill="#7DCF9A"/>
+        <!-- Group 1 (left) -->
+        <g id="flower-group-1">
+          <line x1="16" y1="90" x2="16" y2="76" stroke="#4CAF50" stroke-width="2"/>
+          <circle cx="16" cy="74" r="9" fill="#FFB3DE"/>
+          <circle cx="16" cy="74" r="5" fill="#FFE97A"/>
+          <line x1="26" y1="90" x2="26" y2="79" stroke="#4CAF50" stroke-width="2"/>
+          <circle cx="26" cy="77" r="7" fill="#FF8EC0"/>
+          <circle cx="26" cy="77" r="4" fill="#FFE97A"/>
+          <line x1="8" y1="90" x2="8" y2="80" stroke="#4CAF50" stroke-width="2"/>
+          <circle cx="8" cy="78" r="7" fill="#C8AAFF"/>
+          <circle cx="8" cy="78" r="4" fill="#FFE97A"/>
+          <text x="17" y="60" font-size="8" text-anchor="middle" fill="#2D1B69">×3</text>
+        </g>
+        <!-- Group 2 (middle) -->
+        <g id="flower-group-2">
+          <line x1="56" y1="90" x2="56" y2="76" stroke="#4CAF50" stroke-width="2"/>
+          <circle cx="56" cy="74" r="9" fill="#FFE97A"/>
+          <circle cx="56" cy="74" r="5" fill="#FF8C00"/>
+          <line x1="66" y1="90" x2="66" y2="79" stroke="#4CAF50" stroke-width="2"/>
+          <circle cx="66" cy="77" r="7" fill="#A8EDBB"/>
+          <circle cx="66" cy="77" r="4" fill="#2D8A5A"/>
+          <line x1="46" y1="90" x2="46" y2="79" stroke="#4CAF50" stroke-width="2"/>
+          <circle cx="46" cy="77" r="7" fill="#FFB3DE"/>
+          <circle cx="46" cy="77" r="4" fill="#FFE97A"/>
+          <text x="57" y="60" font-size="8" text-anchor="middle" fill="#2D1B69">×3</text>
+        </g>
+        <!-- Group 3 (right) -->
+        <g id="flower-group-3">
+          <line x1="96" y1="90" x2="96" y2="76" stroke="#4CAF50" stroke-width="2"/>
+          <circle cx="96" cy="74" r="9" fill="#C8AAFF"/>
+          <circle cx="96" cy="74" r="5" fill="#FFE97A"/>
+          <line x1="106" y1="90" x2="106" y2="79" stroke="#4CAF50" stroke-width="2"/>
+          <circle cx="106" cy="77" r="7" fill="#9b5de5"/>
+          <circle cx="106" cy="77" r="4" fill="#FFE97A"/>
+          <line x1="86" y1="90" x2="86" y2="79" stroke="#4CAF50" stroke-width="2"/>
+          <circle cx="86" cy="77" r="7" fill="#FF8EC0"/>
+          <circle cx="86" cy="77" r="4" fill="#FFE97A"/>
+          <text x="97" y="60" font-size="8" text-anchor="middle" fill="#2D1B69">×3</text>
+        </g>
+      </svg>`
+    ];
 
-      2: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-        <!-- Cave arch background -->
+    // World 2 — ctx 0: Crystal with lock, ctx 1: Cave gems scattered, ctx 2: Blocked tunnel
+    const world2 = [
+      // ctx 0 — Crystal with big lock (original)
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
         <ellipse cx="60" cy="75" rx="52" ry="48" fill="#1a0a3a"/>
         <ellipse cx="60" cy="78" rx="44" ry="42" fill="#0d0520"/>
-        <!-- Crystal door shards -->
         <polygon points="38,95 44,50 50,95" fill="#7B52AB" opacity="0.9"/>
         <polygon points="46,95 54,42 62,95" fill="#9b5de5" opacity="0.85"/>
         <polygon points="58,95 66,48 74,95" fill="#C8AAFF" opacity="0.9"/>
         <polygon points="70,95 78,54 84,95" fill="#7B52AB" opacity="0.85"/>
-        <!-- Crystal highlights -->
         <polygon points="38,95 44,50 50,95" fill="url(#cg1)" opacity="0.4"/>
         <polygon points="58,95 66,48 74,95" fill="url(#cg2)" opacity="0.4"/>
-        <!-- Glowing keyhole -->
         <circle cx="60" cy="75" r="10" fill="#FFE97A" opacity="0.3"/>
         <circle cx="60" cy="72" r="6" fill="#1a0a3a" stroke="#FFD700" stroke-width="2"/>
         <rect x="57" y="72" width="6" height="8" rx="2" fill="#1a0a3a" stroke="#FFD700" stroke-width="2"/>
-        <!-- Glow ring -->
         <circle cx="60" cy="72" r="9" fill="none" stroke="#FFE97A" stroke-width="2" opacity="0.6"/>
-        <!-- Embedded crystals in arch -->
         <polygon points="20,68 25,58 30,68" fill="#C8AAFF" opacity="0.8"/>
         <polygon points="90,68 95,58 100,68" fill="#FFB3DE" opacity="0.8"/>
         <polygon points="30,45 34,36 38,45" fill="#A8EDBB" opacity="0.7"/>
         <polygon points="82,45 86,36 90,45" fill="#FFE97A" opacity="0.7"/>
-        <!-- Ground -->
         <rect x="0" y="100" width="120" height="20" rx="4" fill="#2D1B69"/>
         <defs>
           <linearGradient id="cg1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="0.8"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient>
           <linearGradient id="cg2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="0.8"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient>
         </defs>
       </svg>`,
+      // ctx 1 — Cave with scattered gem stones
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="120" height="120" fill="#0d0520"/>
+        <ellipse cx="60" cy="55" rx="55" ry="50" fill="#1a0a3a"/>
+        <path d="M5,30 Q30,5 60,8 Q90,5 115,30 L115,120 L5,120 Z" fill="#1a0a3a"/>
+        <!-- Cave walls texture -->
+        <path d="M5,30 Q30,5 60,8 Q90,5 115,30" stroke="#2D1B69" stroke-width="4" fill="none"/>
+        <!-- Ground -->
+        <rect x="0" y="98" width="120" height="22" fill="#2D1B69"/>
+        <!-- Scattered gems on ground -->
+        <polygon points="18,98 22,84 26,98" fill="#C8AAFF" opacity="0.9" class="scene-flower" id="sf-1"/>
+        <polygon points="18,98 22,84 26,98" fill="url(#sg1)" opacity="0.4"/>
+        <polygon points="35,98 40,86 45,98" fill="#9b5de5" opacity="0.9" class="scene-flower" id="sf-2"/>
+        <polygon points="52,98 56,88 60,98" fill="#FFB3DE" opacity="0.9" class="scene-flower" id="sf-3"/>
+        <polygon points="68,98 72,83 76,98" fill="#A8EDBB" opacity="0.9" class="scene-flower" id="sf-4"/>
+        <polygon points="84,98 89,87 94,98" fill="#C8AAFF" opacity="0.85"/>
+        <polygon points="98,98 102,90 106,98" fill="#FFE97A" opacity="0.9"/>
+        <!-- Fairies with glowing wands -->
+        <circle cx="35" cy="55" r="6" fill="#FFB3DE" opacity="0.8"/>
+        <circle cx="85" cy="48" r="5" fill="#C8AAFF" opacity="0.8"/>
+        <line x1="35" y1="55" x2="42" y2="48" stroke="#FFE97A" stroke-width="1.5"/>
+        <circle cx="43" cy="47" r="2" fill="#FFE97A"/>
+        <line x1="85" y1="48" x2="78" y2="42" stroke="#FFE97A" stroke-width="1.5"/>
+        <circle cx="77" cy="41" r="2" fill="#FFE97A"/>
+        <defs><linearGradient id="sg1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="0.7"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient></defs>
+      </svg>`,
+      // ctx 2 — Blocked tunnel
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="120" height="120" fill="#1a0a3a"/>
+        <!-- Tunnel arch -->
+        <path d="M15,110 L15,55 Q60,10 105,55 L105,110 Z" fill="#2D1B69"/>
+        <path d="M22,110 L22,58 Q60,18 98,58 L98,110 Z" fill="#0d0520"/>
+        <!-- Rocks blocking the path -->
+        <ellipse cx="35" cy="100" rx="18" ry="12" fill="#555" class="scene-flower" id="sf-1"/>
+        <ellipse cx="37" cy="98" rx="14" ry="9" fill="#666"/>
+        <ellipse cx="60" cy="105" rx="22" ry="10" fill="#4a4a4a" class="scene-flower" id="sf-2"/>
+        <ellipse cx="62" cy="103" rx="18" ry="8" fill="#5a5a5a"/>
+        <ellipse cx="85" cy="100" rx="17" ry="11" fill="#555" class="scene-flower" id="sf-3"/>
+        <ellipse cx="87" cy="98" rx="13" ry="8" fill="#666"/>
+        <ellipse cx="50" cy="90" rx="14" ry="9" fill="#444"/>
+        <ellipse cx="75" cy="88" rx="12" ry="8" fill="#4a4a4a"/>
+        <!-- Crystal shards sticking out -->
+        <polygon points="30,88 34,76 38,88" fill="#C8AAFF" opacity="0.7"/>
+        <polygon points="70,86 74,75 78,86" fill="#9b5de5" opacity="0.7"/>
+        <!-- Tunnel glow inside -->
+        <ellipse cx="60" cy="50" rx="18" ry="14" fill="#7B52AB" opacity="0.3"/>
+        <ellipse cx="60" cy="50" rx="10" ry="8" fill="#C8AAFF" opacity="0.2"/>
+        <!-- Stars in tunnel -->
+        <text x="52" y="45" font-size="8" fill="#FFE97A">✦</text>
+        <text x="64" y="38" font-size="7" fill="#C8AAFF">✦</text>
+      </svg>`
+    ];
 
-      3: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-        <!-- Ground grass -->
+    // World 3 — ctx 0: Mushroom door (original), ctx 1: Two big trees blocking, ctx 2: Giant magical flower
+    const world3 = [
+      // ctx 0 — Mushroom door (original)
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="98" width="120" height="22" rx="4" fill="#A8EDBB"/>
-        <!-- Mushroom stem -->
         <rect x="40" y="65" width="40" height="40" rx="8" fill="#F5DEB3"/>
-        <!-- Stem spots -->
         <ellipse cx="52" cy="80" rx="5" ry="4" fill="#E8C890" opacity="0.6"/>
         <ellipse cx="68" cy="88" rx="4" ry="3" fill="#E8C890" opacity="0.6"/>
-        <!-- Mushroom cap -->
         <ellipse cx="60" cy="55" rx="52" ry="38" fill="#E53935"/>
         <ellipse cx="60" cy="52" rx="50" ry="35" fill="#EF5350"/>
-        <!-- White spots on cap -->
         <circle cx="30" cy="50" r="9" fill="white" opacity="0.9"/>
         <circle cx="55" cy="38" r="10" fill="white" opacity="0.9"/>
         <circle cx="82" cy="48" r="8" fill="white" opacity="0.9"/>
         <circle cx="43" cy="62" r="6" fill="white" opacity="0.8"/>
         <circle cx="72" cy="64" r="7" fill="white" opacity="0.8"/>
-        <!-- Arched door in stem -->
         <path d="M47,105 L47,78 Q60,68 73,78 L73,105 Z" fill="#8B4513"/>
         <path d="M49,105 L49,79 Q60,70 71,79 L71,105 Z" fill="#5a2d0c"/>
-        <!-- Round window -->
         <circle cx="60" cy="76" r="6" fill="#87CEEB" stroke="#8B4513" stroke-width="2"/>
         <line x1="57" y1="76" x2="63" y2="76" stroke="#8B4513" stroke-width="1.5"/>
         <line x1="60" y1="73" x2="60" y2="79" stroke="#8B4513" stroke-width="1.5"/>
-        <!-- Question mark sign -->
         <rect x="55" y="84" width="10" height="13" rx="2" fill="#FFE97A"/>
         <text x="60" y="94" font-size="9" text-anchor="middle" fill="#2D1B69" font-weight="bold">?</text>
-        <!-- Small flowers -->
         <circle cx="15" cy="101" r="5" fill="#FFB3DE"/>
         <circle cx="15" cy="101" r="2.5" fill="#FFE97A"/>
         <circle cx="105" cy="101" r="5" fill="#C8AAFF"/>
@@ -2853,142 +3057,441 @@ const GameApp = {
         <circle cx="28" cy="100" r="4" fill="#FFE97A"/>
         <circle cx="92" cy="100" r="4" fill="#A8EDBB"/>
       </svg>`,
+      // ctx 1 — Two big trees blocking the path
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="120" height="120" fill="#1a5e3a" opacity="0.3"/>
+        <rect x="0" y="95" width="120" height="25" fill="#A8EDBB"/>
+        <!-- Path -->
+        <rect x="48" y="95" width="24" height="25" fill="#c8a96e" opacity="0.6"/>
+        <!-- Left tree trunk -->
+        <rect x="8" y="60" width="22" height="40" rx="5" fill="#6B3A1F"/>
+        <rect x="11" y="62" width="8" height="36" rx="3" fill="#8B5E3C" opacity="0.5"/>
+        <!-- Left foliage layers -->
+        <ellipse cx="19" cy="50" rx="26" ry="20" fill="#2D8A5A"/>
+        <ellipse cx="19" cy="42" rx="22" ry="18" fill="#3aad6e"/>
+        <ellipse cx="19" cy="36" rx="16" ry="14" fill="#4CAF50"/>
+        <!-- Right tree trunk -->
+        <rect x="90" y="60" width="22" height="40" rx="5" fill="#6B3A1F"/>
+        <rect x="93" y="62" width="8" height="36" rx="3" fill="#8B5E3C" opacity="0.5"/>
+        <!-- Right foliage layers -->
+        <ellipse cx="101" cy="50" rx="26" ry="20" fill="#2D8A5A"/>
+        <ellipse cx="101" cy="42" rx="22" ry="18" fill="#3aad6e"/>
+        <ellipse cx="101" cy="36" rx="16" ry="14" fill="#4CAF50"/>
+        <!-- Branches crossing the path -->
+        <path d="M31,62 Q60,50 89,62" stroke="#6B3A1F" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M31,72 Q60,60 89,72" stroke="#6B3A1F" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.7"/>
+        <!-- Glowing barrier sign -->
+        <rect x="50" y="54" width="20" height="14" rx="4" fill="#FFE97A" opacity="0.9"/>
+        <text x="60" y="64" font-size="9" text-anchor="middle" fill="#2D1B69" font-weight="bold">×?</text>
+        <!-- Small forest flowers -->
+        <circle cx="4" cy="98" r="4" fill="#FFB3DE"/>
+        <circle cx="4" cy="98" r="2" fill="#FFE97A"/>
+        <circle cx="116" cy="98" r="4" fill="#C8AAFF"/>
+        <circle cx="116" cy="98" r="2" fill="#FFE97A"/>
+      </svg>`,
+      // ctx 2 — Giant magical flower (closed)
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="120" height="120" fill="#1a5e3a" opacity="0.25"/>
+        <rect x="0" y="98" width="120" height="22" fill="#A8EDBB"/>
+        <!-- Stem -->
+        <rect x="54" y="60" width="12" height="45" rx="5" fill="#4CAF50"/>
+        <!-- Leaves -->
+        <ellipse cx="38" cy="80" rx="20" ry="8" fill="#4CAF50" transform="rotate(-20 38 80)"/>
+        <ellipse cx="82" cy="75" rx="18" ry="7" fill="#3aad6e" transform="rotate(20 82 75)"/>
+        <!-- Closed flower bud (big) -->
+        <ellipse cx="60" cy="48" rx="20" ry="28" fill="#9b5de5" opacity="0.15"/>
+        <path d="M60,20 Q45,30 44,50 Q44,62 60,65 Q76,62 76,50 Q75,30 60,20 Z" fill="#C8AAFF"/>
+        <path d="M60,20 Q50,32 50,50 Q50,62 60,65 Q70,62 70,50 Q70,32 60,20 Z" fill="#9b5de5"/>
+        <path d="M60,20 Q55,35 55,50 Q55,62 60,65 Q65,62 65,50 Q65,35 60,20 Z" fill="#7B52AB"/>
+        <!-- Petal tips just peeking out -->
+        <ellipse cx="42" cy="38" rx="8" ry="5" fill="#FFB3DE" transform="rotate(-30 42 38)"/>
+        <ellipse cx="78" cy="38" rx="8" ry="5" fill="#FFB3DE" transform="rotate(30 78 38)"/>
+        <ellipse cx="60" cy="22" rx="6" ry="4" fill="#FFE97A"/>
+        <!-- Lock symbol on bud -->
+        <rect x="54" y="44" width="12" height="10" rx="3" fill="#FFD700"/>
+        <path d="M56,44 Q56,38 60,38 Q64,38 64,44" stroke="#FFD700" stroke-width="2.5" fill="none"/>
+        <!-- Sparkles -->
+        <text x="24" y="35" font-size="10" fill="#FFE97A">✦</text>
+        <text x="90" y="30" font-size="9" fill="#C8AAFF">✦</text>
+      </svg>`
+    ];
 
-      4: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-        <!-- Sky with rainbow -->
+    // World 4 — ctx 0: Broken bridge (original), ctx 1: Floating island gap, ctx 2: Faded rainbow
+    const world4 = [
+      // ctx 0 — Broken bridge (original)
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="120" height="120" fill="#87CEEB" opacity="0.3"/>
-        <!-- Rainbow arcs -->
         <path d="M5,80 Q60,-10 115,80" stroke="#FF6B6B" stroke-width="5" fill="none" opacity="0.7"/>
         <path d="M8,80 Q60,-3 112,80" stroke="#FF8C00" stroke-width="4" fill="none" opacity="0.7"/>
         <path d="M11,80 Q60,4 109,80" stroke="#FFE97A" stroke-width="4" fill="none" opacity="0.7"/>
         <path d="M14,80 Q60,10 106,80" stroke="#A8EDBB" stroke-width="4" fill="none" opacity="0.7"/>
         <path d="M17,80 Q60,15 103,80" stroke="#87CEEB" stroke-width="4" fill="none" opacity="0.7"/>
         <path d="M20,80 Q60,19 100,80" stroke="#C8AAFF" stroke-width="4" fill="none" opacity="0.7"/>
-        <!-- Water below -->
         <rect x="0" y="95" width="120" height="25" rx="0" fill="#2e86de" opacity="0.7"/>
         <path d="M0,97 Q15,93 30,97 Q45,101 60,97 Q75,93 90,97 Q105,101 120,97" stroke="#4facfe" stroke-width="2" fill="none"/>
-        <!-- Stone bridge left section -->
         <rect x="0" y="78" width="38" height="18" rx="4" fill="#888"/>
         <rect x="2" y="78" width="16" height="18" rx="3" fill="#999"/>
         <rect x="20" y="78" width="16" height="18" rx="3" fill="#999"/>
-        <!-- Stone bridge right section -->
         <rect x="82" y="78" width="38" height="18" rx="4" fill="#888"/>
         <rect x="84" y="78" width="16" height="18" rx="3" fill="#999"/>
         <rect x="102" y="78" width="16" height="18" rx="3" fill="#999"/>
-        <!-- Gap in middle with dashed outline -->
         <rect x="39" y="77" width="42" height="20" rx="3" fill="none" stroke="#FFE97A" stroke-width="2.5" stroke-dasharray="5,4"/>
-        <!-- Floating missing piece -->
         <rect x="42" y="54" width="36" height="18" rx="4" fill="#AAA" stroke="#FFD700" stroke-width="2"/>
         <text x="60" y="67" font-size="10" text-anchor="middle" fill="#2D1B69" font-weight="bold">3×4</text>
-        <!-- Small sparkle near piece -->
         <text x="80" y="52" font-size="11" fill="#FFE97A">✦</text>
         <text x="40" y="52" font-size="9" fill="#FFE97A">✦</text>
       </svg>`,
+      // ctx 1 — Floating island with gap
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="120" height="120" fill="#96d5ff" opacity="0.4"/>
+        <!-- Left island -->
+        <ellipse cx="28" cy="82" rx="28" ry="12" fill="#A8EDBB"/>
+        <ellipse cx="28" cy="80" rx="26" ry="10" fill="#c8f5d8"/>
+        <rect x="2" y="80" width="54" height="15" rx="6" fill="#A8EDBB"/>
+        <ellipse cx="28" cy="95" rx="22" ry="8" fill="#7DCF9A" opacity="0.6"/>
+        <!-- Trees on left island -->
+        <rect x="16" y="60" width="6" height="22" rx="2" fill="#6B3A1F"/>
+        <ellipse cx="19" cy="56" rx="10" ry="8" fill="#4CAF50"/>
+        <rect x="30" y="64" width="5" height="18" rx="2" fill="#6B3A1F"/>
+        <ellipse cx="32" cy="60" rx="8" ry="7" fill="#3aad6e"/>
+        <!-- Right island -->
+        <ellipse cx="92" cy="82" rx="28" ry="12" fill="#A8EDBB"/>
+        <ellipse cx="92" cy="80" rx="26" ry="10" fill="#c8f5d8"/>
+        <rect x="66" y="80" width="54" height="15" rx="6" fill="#A8EDBB"/>
+        <ellipse cx="92" cy="95" rx="22" ry="8" fill="#7DCF9A" opacity="0.6"/>
+        <!-- Flower on right island -->
+        <line x1="96" y1="80" x2="96" y2="70" stroke="#4CAF50" stroke-width="2"/>
+        <circle cx="96" cy="68" r="6" fill="#FFB3DE"/>
+        <circle cx="96" cy="68" r="3" fill="#FFE97A"/>
+        <!-- Gap with dotted outline -->
+        <rect x="55" y="73" width="12" height="20" rx="3" fill="none" stroke="#FFE97A" stroke-width="2" stroke-dasharray="4,3"/>
+        <text x="61" y="85" font-size="7" text-anchor="middle" fill="#FFE97A">?</text>
+        <!-- Clouds in sky -->
+        <ellipse cx="15" cy="30" rx="18" ry="10" fill="white" opacity="0.8"/>
+        <ellipse cx="28" cy="26" rx="14" ry="9" fill="white" opacity="0.8"/>
+        <ellipse cx="95" cy="28" rx="16" ry="9" fill="white" opacity="0.8"/>
+        <ellipse cx="108" cy="24" rx="12" ry="8" fill="white" opacity="0.8"/>
+        <!-- Stars -->
+        <text x="55" y="22" font-size="10" fill="#FFE97A">★</text>
+        <text x="68" y="35" font-size="8" fill="#FFE97A">✦</text>
+      </svg>`,
+      // ctx 2 — Faded rainbow needing to be lit up
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="120" height="120" fill="#87CEEB" opacity="0.2"/>
+        <!-- Faded/grey rainbow -->
+        <path d="M5,90 Q60,10 115,90" stroke="#ccc" stroke-width="7" fill="none" opacity="0.5"/>
+        <path d="M9,90 Q60,18 111,90" stroke="#bbb" stroke-width="6" fill="none" opacity="0.5"/>
+        <path d="M13,90 Q60,25 107,90" stroke="#ccc" stroke-width="5" fill="none" opacity="0.5"/>
+        <path d="M17,90 Q60,31 103,90" stroke="#bbb" stroke-width="5" fill="none" opacity="0.5"/>
+        <!-- Lit section (left part glowing) -->
+        <path d="M5,90 Q30,40 60,30" stroke="#FF6B6B" stroke-width="7" fill="none" opacity="0.85"/>
+        <path d="M9,90 Q32,46 60,36" stroke="#FF8C00" stroke-width="6" fill="none" opacity="0.85"/>
+        <path d="M13,90 Q34,51 60,40" stroke="#FFE97A" stroke-width="5" fill="none" opacity="0.85"/>
+        <!-- Sparkle at boundary showing where more color is needed -->
+        <circle cx="60" cy="30" r="6" fill="#FFE97A" opacity="0.6"/>
+        <text x="58" y="28" font-size="10" fill="#FFE97A">✦</text>
+        <!-- Question mark on right faded half -->
+        <text x="85" y="55" font-size="18" fill="#aaa" font-weight="bold" opacity="0.7">?</text>
+        <!-- Water / ground -->
+        <rect x="0" y="100" width="120" height="20" fill="#2e86de" opacity="0.5"/>
+        <path d="M0,102 Q20,98 40,102 Q60,106 80,102 Q100,98 120,102" stroke="#4facfe" stroke-width="2" fill="none"/>
+        <!-- Clouds at ends of rainbow -->
+        <ellipse cx="12" cy="92" rx="14" ry="8" fill="white" opacity="0.9"/>
+        <ellipse cx="108" cy="92" rx="14" ry="8" fill="white" opacity="0.9"/>
+      </svg>`
+    ];
 
-      5: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-        <!-- Background sky -->
+    // World 5 — ctx 0: Castle gate (original), ctx 1: Cloud gap, ctx 2: Magic cloud with lock
+    const world5 = [
+      // ctx 0 — Castle gate (original)
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="120" height="120" fill="#b0c4ff" opacity="0.3"/>
-        <!-- Big cloud base -->
         <ellipse cx="60" cy="88" rx="55" ry="22" fill="white"/>
         <ellipse cx="35" cy="82" rx="30" ry="20" fill="white"/>
         <ellipse cx="85" cy="80" rx="28" ry="20" fill="white"/>
         <ellipse cx="60" cy="76" rx="36" ry="22" fill="white"/>
-        <!-- Castle tower on cloud -->
         <rect x="46" y="40" width="28" height="40" rx="3" fill="#d8d8f0"/>
-        <!-- Battlements -->
         <rect x="44" y="34" width="8" height="10" rx="2" fill="#d8d8f0"/>
         <rect x="56" y="34" width="8" height="10" rx="2" fill="#d8d8f0"/>
         <rect x="68" y="34" width="8" height="10" rx="2" fill="#d8d8f0"/>
-        <!-- Castle window -->
         <rect x="54" y="48" width="12" height="14" rx="6" fill="#7B52AB" opacity="0.6"/>
-        <!-- Drawbridge gate -->
         <rect x="51" y="64" width="18" height="18" rx="3" fill="#8B5E3C"/>
-        <!-- Chains -->
         <line x1="51" y1="64" x2="44" y2="55" stroke="#888" stroke-width="2.5"/>
         <line x1="69" y1="64" x2="76" y2="55" stroke="#888" stroke-width="2.5"/>
-        <!-- Chain links -->
         <ellipse cx="47" cy="59" rx="2" ry="3" fill="none" stroke="#888" stroke-width="2"/>
         <ellipse cx="73" cy="59" rx="2" ry="3" fill="none" stroke="#888" stroke-width="2"/>
-        <!-- Stars around -->
         <text x="18" y="45" font-size="14" fill="#FFE97A">★</text>
         <text x="95" y="48" font-size="12" fill="#FFE97A">★</text>
         <text x="8" y="68" font-size="10" fill="#FFE97A">✦</text>
         <text x="105" y="70" font-size="10" fill="#FFE97A">✦</text>
-        <!-- Small clouds -->
         <ellipse cx="15" cy="58" rx="12" ry="7" fill="white" opacity="0.8"/>
         <ellipse cx="105" cy="60" rx="12" ry="7" fill="white" opacity="0.8"/>
       </svg>`,
+      // ctx 1 — Lumi-shaped cloud gap (hole in clouds)
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="120" height="120" fill="#b0c4ff" opacity="0.5"/>
+        <!-- Big cloud floor left -->
+        <ellipse cx="22" cy="75" rx="22" ry="14" fill="white"/>
+        <ellipse cx="10" cy="70" rx="14" ry="10" fill="white"/>
+        <ellipse cx="32" cy="68" rx="16" ry="11" fill="white"/>
+        <rect x="0" y="72" width="44" height="28" fill="white"/>
+        <!-- Big cloud floor right -->
+        <ellipse cx="98" cy="75" rx="22" ry="14" fill="white"/>
+        <ellipse cx="110" cy="70" rx="14" ry="10" fill="white"/>
+        <ellipse cx="88" cy="68" rx="16" ry="11" fill="white"/>
+        <rect x="76" y="72" width="44" height="28" fill="white"/>
+        <!-- Rounded gap in the middle -->
+        <rect x="44" y="72" width="32" height="28" fill="#b0c4ff" opacity="0.5"/>
+        <!-- Dashed outline of gap -->
+        <rect x="44" y="68" width="32" height="32" rx="6" fill="none" stroke="#C8AAFF" stroke-width="2" stroke-dasharray="5,3"/>
+        <!-- Lumi cloud silhouette hint inside gap -->
+        <ellipse cx="60" cy="84" rx="12" ry="7" fill="#dde8ff" opacity="0.7"/>
+        <ellipse cx="55" cy="79" rx="7" ry="6" fill="#dde8ff" opacity="0.7"/>
+        <ellipse cx="65" cy="78" rx="6" ry="5" fill="#dde8ff" opacity="0.7"/>
+        <!-- Stars above -->
+        <text x="50" y="25" font-size="14" fill="#FFE97A">★</text>
+        <text x="65" y="18" font-size="10" fill="#C8AAFF">✦</text>
+        <text x="30" y="35" font-size="9" fill="#FFB3DE">✦</text>
+        <text x="85" y="32" font-size="10" fill="#FFE97A">✦</text>
+        <!-- Small rainbow above -->
+        <path d="M15,50 Q60,20 105,50" stroke="#FFB3DE" stroke-width="3" fill="none" opacity="0.6"/>
+        <path d="M18,50 Q60,25 102,50" stroke="#C8AAFF" stroke-width="3" fill="none" opacity="0.6"/>
+      </svg>`,
+      // ctx 2 — Magic cloud with lock symbol
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="120" height="120" fill="#b0c4ff" opacity="0.4"/>
+        <!-- Background clouds -->
+        <ellipse cx="15" cy="55" rx="14" ry="9" fill="white" opacity="0.6"/>
+        <ellipse cx="105" cy="48" rx="13" ry="8" fill="white" opacity="0.6"/>
+        <!-- Main magic cloud -->
+        <ellipse cx="60" cy="68" rx="48" ry="22" fill="white"/>
+        <ellipse cx="38" cy="58" rx="28" ry="22" fill="white"/>
+        <ellipse cx="82" cy="55" rx="26" ry="20" fill="white"/>
+        <ellipse cx="60" cy="48" rx="32" ry="22" fill="white"/>
+        <ellipse cx="46" cy="40" rx="20" ry="16" fill="white"/>
+        <ellipse cx="74" cy="38" rx="18" ry="15" fill="white"/>
+        <!-- Magical glow inside cloud -->
+        <ellipse cx="60" cy="55" rx="25" ry="16" fill="#C8AAFF" opacity="0.3"/>
+        <!-- Large padlock centered on cloud -->
+        <rect x="48" y="48" width="24" height="20" rx="5" fill="#FFD700"/>
+        <path d="M52,48 Q52,36 60,36 Q68,36 68,48" stroke="#E8A000" stroke-width="4" fill="none"/>
+        <circle cx="60" cy="58" r="5" fill="#E8A000"/>
+        <rect x="58" y="58" width="4" height="6" rx="2" fill="#E8A000"/>
+        <!-- Sparkles around cloud -->
+        <text x="10" y="72" font-size="12" fill="#FFE97A">✦</text>
+        <text x="100" y="68" font-size="11" fill="#FFE97A">✦</text>
+        <text x="28" y="25" font-size="10" fill="#C8AAFF">★</text>
+        <text x="85" y="22" font-size="9" fill="#FFB3DE">★</text>
+        <!-- Ground clouds -->
+        <ellipse cx="60" cy="95" rx="55" ry="16" fill="white" opacity="0.5"/>
+      </svg>`
+    ];
 
-      6: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-        <!-- Night sky -->
+    // World 6 — ctx 0: Falling star in cage (original-style), ctx 1: Universe scroll/book locked, ctx 2: Mountain steps
+    const world6 = [
+      // ctx 0 — Falling star in a cage (original vault adapted)
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="120" height="120" fill="#0d0520" rx="4"/>
-        <!-- Stars in sky -->
         <text x="10" y="18" font-size="10" fill="#FFE97A">★</text>
         <text x="95" y="22" font-size="8" fill="#C8AAFF">★</text>
         <text x="50" y="12" font-size="9" fill="#FFE97A">✦</text>
         <text x="75" y="15" font-size="7" fill="white">✦</text>
         <text x="25" y="30" font-size="7" fill="#FFB3DE">✦</text>
-        <!-- Mountain -->
         <polygon points="10,100 60,20 110,100" fill="#3d1c6e"/>
         <polygon points="30,100 60,28 90,100" fill="#4a2080"/>
-        <!-- Snow cap -->
         <polygon points="48,38 60,20 72,38 60,32" fill="white" opacity="0.9"/>
-        <!-- Stars orbiting vault -->
         <circle cx="60" cy="38" r="22" fill="none" stroke="#FFE97A" stroke-width="1" stroke-dasharray="3,4" opacity="0.5"/>
-        <!-- Vault/safe -->
         <rect x="44" y="24" width="32" height="28" rx="5" fill="#7B52AB"/>
         <rect x="46" y="26" width="28" height="24" rx="4" fill="#9b5de5"/>
-        <!-- Star symbol on vault -->
         <text x="60" y="42" font-size="16" text-anchor="middle" fill="#FFE97A">★</text>
-        <!-- Padlock -->
         <rect x="54" y="44" width="12" height="10" rx="3" fill="#FFD700"/>
         <path d="M56,44 Q56,38 64,38 Q72,38 66,44" stroke="#FFD700" stroke-width="2.5" fill="none"/>
-        <!-- Orbiting mini stars -->
         <circle cx="38" cy="38" r="3" fill="#FFE97A"/>
         <circle cx="82" cy="32" r="2.5" fill="#FFB3DE"/>
         <circle cx="74" cy="55" r="2" fill="#C8AAFF"/>
       </svg>`,
+      // ctx 1 — Universe scroll/book locked
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="120" height="120" fill="#0d0520" rx="4"/>
+        <!-- Stars -->
+        <text x="8" y="16" font-size="9" fill="#FFE97A">✦</text>
+        <text x="98" y="20" font-size="8" fill="#C8AAFF">✦</text>
+        <text x="52" y="10" font-size="7" fill="#FFB3DE">✦</text>
+        <text x="20" y="28" font-size="7" fill="white">★</text>
+        <text x="90" y="30" font-size="8" fill="#FFE97A">★</text>
+        <!-- Big open scroll/book -->
+        <rect x="20" y="40" width="80" height="58" rx="6" fill="#2D1B69" stroke="#C8AAFF" stroke-width="2"/>
+        <rect x="22" y="42" width="76" height="54" rx="5" fill="#3d2a7a"/>
+        <!-- Spine of book -->
+        <rect x="56" y="40" width="8" height="58" rx="3" fill="#2D1B69"/>
+        <!-- Universe symbols on pages -->
+        <circle cx="38" cy="65" r="10" fill="none" stroke="#C8AAFF" stroke-width="1.5" opacity="0.7"/>
+        <circle cx="38" cy="65" r="5" fill="#7B52AB" opacity="0.6"/>
+        <text x="36" y="63" font-size="6" fill="#FFE97A">★</text>
+        <!-- Equation on right page -->
+        <text x="68" y="60" font-size="8" fill="#FFE97A">a × b</text>
+        <line x1="66" y1="64" x2="90" y2="64" stroke="#C8AAFF" stroke-width="1" opacity="0.6"/>
+        <text x="72" y="73" font-size="8" fill="#C8AAFF">= ?</text>
+        <!-- Scrolled ends -->
+        <ellipse cx="20" cy="69" rx="6" ry="29" fill="#2D1B69" stroke="#C8AAFF" stroke-width="1.5"/>
+        <ellipse cx="100" cy="69" rx="6" ry="29" fill="#2D1B69" stroke="#C8AAFF" stroke-width="1.5"/>
+        <!-- Big lock on book -->
+        <rect x="50" y="85" width="20" height="14" rx="4" fill="#FFD700"/>
+        <path d="M53,85 Q53,78 60,78 Q67,78 67,85" stroke="#E8A000" stroke-width="3" fill="none"/>
+        <circle cx="60" cy="92" r="3" fill="#E8A000"/>
+        <!-- Orbit decoration -->
+        <ellipse cx="60" cy="68" rx="32" ry="10" fill="none" stroke="#FFE97A" stroke-width="1" stroke-dasharray="3,4" opacity="0.4"/>
+      </svg>`,
+      // ctx 2 — Mountain steps leading up
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="120" height="120" fill="#0d0520" rx="4"/>
+        <!-- Stars -->
+        <text x="8" y="14" font-size="9" fill="#FFE97A">✦</text>
+        <text x="96" y="18" font-size="8" fill="#C8AAFF">✦</text>
+        <text x="50" y="8" font-size="7" fill="#FFB3DE">★</text>
+        <text x="78" y="12" font-size="8" fill="#FFE97A">★</text>
+        <!-- Mountain silhouette -->
+        <polygon points="0,110 60,25 120,110" fill="#3d1c6e"/>
+        <polygon points="20,110 60,32 100,110" fill="#4a2080"/>
+        <!-- Step 1 (wide bottom) -->
+        <rect x="15" y="95" width="90" height="12" rx="3" fill="#7B52AB"/>
+        <rect x="16" y="96" width="88" height="10" rx="2" fill="#9b5de5" opacity="0.6"/>
+        <!-- Step 2 -->
+        <rect x="26" y="82" width="68" height="12" rx="3" fill="#7B52AB"/>
+        <rect x="27" y="83" width="66" height="10" rx="2" fill="#9b5de5" opacity="0.6"/>
+        <!-- Step 3 -->
+        <rect x="37" y="69" width="46" height="12" rx="3" fill="#7B52AB"/>
+        <rect x="38" y="70" width="44" height="10" rx="2" fill="#9b5de5" opacity="0.6"/>
+        <!-- Step 4 -->
+        <rect x="46" y="56" width="28" height="12" rx="3" fill="#7B52AB"/>
+        <rect x="47" y="57" width="26" height="10" rx="2" fill="#9b5de5" opacity="0.6"/>
+        <!-- Goal star at top -->
+        <circle cx="60" cy="38" r="10" fill="#FFE97A" opacity="0.3"/>
+        <text x="54" y="44" font-size="18" fill="#FFE97A">★</text>
+        <!-- Small lumi figure near bottom step -->
+        <circle cx="25" cy="90" r="5" fill="white" opacity="0.8"/>
+        <ellipse cx="25" cy="94" rx="4" ry="2" fill="white" opacity="0.6"/>
+        <!-- Step numbers -->
+        <text x="55" y="104" font-size="8" fill="#FFE97A">1</text>
+        <text x="55" y="91" font-size="8" fill="#FFE97A">2</text>
+        <text x="55" y="78" font-size="8" fill="#FFE97A">3</text>
+      </svg>`
+    ];
 
-      7: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-        <!-- Dark magical background -->
+    // World 7 — ctx 0: Trapped star in chains (original chest adapted), ctx 1: Dragon guarding star, ctx 2: Finish line
+    const world7 = [
+      // ctx 0 — Trapped star in chains (original)
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="120" height="120" fill="#1a0a1a" rx="4"/>
-        <!-- Stardust sparkles everywhere -->
         <text x="8" y="18" font-size="10" fill="#FFE97A">✦</text>
         <text x="95" y="15" font-size="9" fill="#C8AAFF">✦</text>
         <text x="55" y="10" font-size="8" fill="#FFB3DE">✦</text>
         <text x="25" y="25" font-size="7" fill="#FFE97A">★</text>
         <text x="88" y="30" font-size="9" fill="#FFE97A">★</text>
-        <!-- Treasure chest body -->
         <rect x="28" y="68" width="64" height="42" rx="6" fill="#8B5E3C"/>
         <rect x="30" y="70" width="60" height="38" rx="5" fill="#A0723A"/>
-        <!-- Chest lid -->
         <rect x="26" y="58" width="68" height="18" rx="6" fill="#6B3A1F"/>
         <rect x="28" y="60" width="64" height="16" rx="5" fill="#8B5E3C"/>
-        <!-- Metal bands on chest -->
         <rect x="27" y="72" width="66" height="5" fill="#888" rx="2"/>
         <rect x="27" y="85" width="66" height="5" fill="#888" rx="2"/>
-        <!-- Lock/clasp -->
         <rect x="52" y="62" width="16" height="12" rx="4" fill="#FFD700"/>
         <circle cx="60" cy="66" r="4" fill="#FFA500"/>
-        <!-- Heavy chain across chest -->
         <path d="M15,76 Q30,68 45,76 Q60,84 75,76 Q90,68 105,76" stroke="#888" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <!-- Chain links detail -->
         <ellipse cx="28" cy="71" rx="5" ry="3" fill="none" stroke="#aaa" stroke-width="2"/>
         <ellipse cx="60" cy="80" rx="5" ry="3" fill="none" stroke="#aaa" stroke-width="2"/>
         <ellipse cx="92" cy="71" rx="5" ry="3" fill="none" stroke="#aaa" stroke-width="2"/>
-        <!-- Gold coins spilling -->
         <ellipse cx="20" cy="92" rx="8" ry="5" fill="#FFD700"/>
         <ellipse cx="100" cy="88" rx="7" ry="5" fill="#FFD700"/>
         <ellipse cx="110" cy="100" rx="7" ry="5" fill="#FFC107"/>
         <ellipse cx="12" cy="105" rx="6" ry="4" fill="#FFD700"/>
-        <!-- Math stars scattered -->
         <text x="14" y="62" font-size="14" fill="#FFE97A">★</text>
         <text x="95" y="58" font-size="12" fill="#FFE97A">★</text>
         <text x="104" y="78" font-size="10" fill="#FFB3DE">★</text>
         <text x="6" y="82" font-size="10" fill="#C8AAFF">★</text>
+      </svg>`,
+      // ctx 1 — Dragon silhouette guarding star
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="120" height="120" fill="#1a0a1a" rx="4"/>
+        <!-- Stars -->
+        <text x="6" y="15" font-size="8" fill="#FFE97A">✦</text>
+        <text x="96" y="18" font-size="8" fill="#C8AAFF">✦</text>
+        <text x="50" y="10" font-size="7" fill="#FFB3DE">✦</text>
+        <!-- Glowing star the dragon guards -->
+        <circle cx="85" cy="35" r="14" fill="#FFE97A" opacity="0.2"/>
+        <circle cx="85" cy="35" r="8" fill="#FFE97A" opacity="0.5"/>
+        <text x="79" y="41" font-size="18" fill="#FFE97A">★</text>
+        <!-- Dragon silhouette body -->
+        <ellipse cx="52" cy="75" rx="38" ry="28" fill="#4a0a4a"/>
+        <ellipse cx="52" cy="73" rx="35" ry="25" fill="#6a0a6a"/>
+        <!-- Dragon head -->
+        <ellipse cx="76" cy="58" rx="18" ry="14" fill="#4a0a4a"/>
+        <ellipse cx="77" cy="57" rx="16" ry="12" fill="#6a0a6a"/>
+        <!-- Snout -->
+        <ellipse cx="90" cy="60" rx="10" ry="6" fill="#5a0a5a"/>
+        <!-- Eye -->
+        <circle cx="82" cy="54" r="4" fill="#FFD700"/>
+        <circle cx="83" cy="53" r="2" fill="#1a0a1a"/>
+        <!-- Horns -->
+        <polygon points="74,46 70,30 78,45" fill="#8B2BE2"/>
+        <polygon points="84,44 82,28 88,42" fill="#8B2BE2"/>
+        <!-- Wing -->
+        <path d="M30,60 Q10,30 25,25 Q40,20 50,50" fill="#4a0a4a"/>
+        <path d="M30,60 Q12,32 26,27 Q40,22 50,50" fill="#6a0a6a" opacity="0.7"/>
+        <!-- Tail -->
+        <path d="M20,85 Q5,95 10,110 Q15,118 20,112" stroke="#4a0a4a" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <!-- Fire breath toward star -->
+        <path d="M92,60 Q98,50 94,42" stroke="#FF8C00" stroke-width="3" fill="none" opacity="0.6"/>
+        <circle cx="94" cy="40" r="3" fill="#FFE97A" opacity="0.7"/>
+        <!-- Ground -->
+        <rect x="0" y="105" width="120" height="15" fill="#2D1B69"/>
+      </svg>`,
+      // ctx 2 — Finish line banner
+      `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="120" height="120" fill="#1a0a1a" rx="4"/>
+        <!-- Stardust background -->
+        <text x="8" y="16" font-size="8" fill="#FFE97A">✦</text>
+        <text x="96" y="20" font-size="7" fill="#C8AAFF">✦</text>
+        <text x="50" y="10" font-size="8" fill="#FFB3DE">★</text>
+        <text x="72" y="14" font-size="7" fill="#FFE97A">✦</text>
+        <text x="22" y="28" font-size="7" fill="#C8AAFF">★</text>
+        <!-- Left post -->
+        <rect x="18" y="30" width="8" height="75" rx="3" fill="#FFD700"/>
+        <ellipse cx="22" cy="30" rx="6" ry="6" fill="#FFE97A"/>
+        <!-- Right post -->
+        <rect x="94" y="30" width="8" height="75" rx="3" fill="#FFD700"/>
+        <ellipse cx="98" cy="30" rx="6" ry="6" fill="#FFE97A"/>
+        <!-- Finish ribbon / banner -->
+        <rect x="18" y="36" width="84" height="22" rx="4" fill="#C8AAFF"/>
+        <!-- Checkered pattern on ribbon -->
+        <rect x="18" y="36" width="14" height="11" rx="0" fill="#9b5de5"/>
+        <rect x="32" y="36" width="14" height="11" rx="0" fill="#C8AAFF"/>
+        <rect x="46" y="36" width="14" height="11" rx="0" fill="#9b5de5"/>
+        <rect x="60" y="36" width="14" height="11" rx="0" fill="#C8AAFF"/>
+        <rect x="74" y="36" width="14" height="11" rx="0" fill="#9b5de5"/>
+        <rect x="88" y="36" width="14" height="11" rx="0" fill="#C8AAFF"/>
+        <rect x="18" y="47" width="14" height="11" rx="0" fill="#C8AAFF"/>
+        <rect x="32" y="47" width="14" height="11" rx="0" fill="#9b5de5"/>
+        <rect x="46" y="47" width="14" height="11" rx="0" fill="#C8AAFF"/>
+        <rect x="60" y="47" width="14" height="11" rx="0" fill="#9b5de5"/>
+        <rect x="74" y="47" width="14" height="11" rx="0" fill="#C8AAFF"/>
+        <rect x="88" y="47" width="14" height="11" rx="0" fill="#9b5de5"/>
+        <!-- Clip ribbon to rect -->
+        <rect x="18" y="36" width="84" height="22" rx="4" fill="none" stroke="#FFD700" stroke-width="2"/>
+        <!-- Stars / confetti -->
+        <text x="30" y="78" font-size="16" fill="#FFE97A">★</text>
+        <text x="60" y="72" font-size="20" fill="#FFE97A">★</text>
+        <text x="86" y="76" font-size="14" fill="#C8AAFF">★</text>
+        <circle cx="44" cy="85" r="4" fill="#FFB3DE"/>
+        <circle cx="76" cy="82" r="3" fill="#A8EDBB"/>
+        <circle cx="55" cy="92" r="3" fill="#FFE97A"/>
+        <!-- Ground -->
+        <rect x="0" y="105" width="120" height="15" fill="#2D1B69"/>
       </svg>`
-    };
-    return scenes[worldId] || scenes[1];
+    ];
+
+    const allScenes = { 1: world1, 2: world2, 3: world3, 4: world4, 5: world5, 6: world6, 7: world7 };
+    const worldScenes = allScenes[worldId] || allScenes[1];
+    return worldScenes[ctxIdx % worldScenes.length] || worldScenes[0];
   },
 
   // ===== BOSS DEFEAT ANIMATION =====
