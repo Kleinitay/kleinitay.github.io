@@ -1,0 +1,2644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stardust Multiplication Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #C8AAFF;
+    --meadow: #A8EDBB;
+    --stardust: #FFE97A;
+    --blossom: #FFB3DE;
+    --deep: #2D1B69;
+    --cloud: #FFFAF5;
+    --correct: #5CDB6F;
+    --oops: #FF8C6B;
+    --btn-radius: 24px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    font-size: 18px;
+    background: var(--deep);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .screen {
+    display: none;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    overflow: hidden;
+  }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ===== SPARKLE BACKGROUND ===== */
+  .sparkle-bg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .sparkle-bg .spark {
+    position: absolute;
+    border-radius: 50%;
+    animation: floatSpark linear infinite;
+    opacity: 0;
+  }
+  @keyframes floatSpark {
+    0% { opacity: 0; transform: translateY(0) scale(0); }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-100vh) scale(1.2); }
+  }
+
+  /* ===== TITLE SCREEN ===== */
+  #screen-title {
+    background: linear-gradient(160deg, #1a0a4a 0%, #3a1c8a 40%, #6b2fa0 70%, #c8aaff 100%);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0;
+  }
+  .title-lumi {
+    animation: titleGallop 1.2s ease-in-out infinite alternate;
+    filter: drop-shadow(0 8px 24px rgba(200,170,255,0.6));
+    z-index: 2;
+    margin-bottom: -10px;
+  }
+  @keyframes titleGallop {
+    0% { transform: translateY(0) rotate(-2deg); }
+    100% { transform: translateY(-18px) rotate(2deg); }
+  }
+  .title-text {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(36px, 6vw, 72px);
+    color: var(--stardust);
+    text-shadow: 0 0 30px rgba(255,233,122,0.8), 0 4px 0 #a07020;
+    animation: shimmer 2s ease-in-out infinite alternate;
+    text-align: center;
+    z-index: 2;
+    line-height: 1.1;
+    padding: 0 20px;
+  }
+  .title-sub {
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(16px, 2.5vw, 28px);
+    color: var(--blossom);
+    text-align: center;
+    z-index: 2;
+    margin-bottom: 30px;
+  }
+  @keyframes shimmer {
+    0% { text-shadow: 0 0 20px rgba(255,233,122,0.6), 0 4px 0 #a07020; }
+    100% { text-shadow: 0 0 50px rgba(255,233,122,1), 0 0 80px rgba(200,170,255,0.8), 0 4px 0 #a07020; }
+  }
+  .title-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    z-index: 2;
+    align-items: center;
+  }
+  .btn-primary {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(22px, 3vw, 32px);
+    background: linear-gradient(135deg, var(--stardust), #ffb830);
+    color: var(--deep);
+    border: none;
+    border-radius: var(--btn-radius);
+    padding: 16px 48px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(255,184,48,0.5), 0 2px 0 #c08820;
+    transition: transform 0.1s, box-shadow 0.1s;
+    min-width: 200px;
+    min-height: 60px;
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(255,184,48,0.6), 0 2px 0 #c08820; }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-secondary {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(18px, 2.5vw, 26px);
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 3px solid rgba(255,255,255,0.4);
+    border-radius: var(--btn-radius);
+    padding: 12px 36px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+    min-height: 60px;
+    min-width: 160px;
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
+
+  /* ===== NAME INPUT ===== */
+  .name-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .name-box {
+    background: var(--cloud);
+    border-radius: 32px;
+    padding: 40px;
+    text-align: center;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .name-box h2 { font-family: 'Fredoka One'; font-size: 32px; color: var(--deep); margin-bottom: 16px; }
+  .name-box p { font-size: 20px; color: #555; margin-bottom: 24px; }
+  .name-input {
+    font-family: 'Nunito'; font-size: 28px;
+    border: 3px solid var(--sky);
+    border-radius: 16px;
+    padding: 12px 20px;
+    width: 100%;
+    text-align: center;
+    color: var(--deep);
+    outline: none;
+    margin-bottom: 24px;
+  }
+  .name-input:focus { border-color: var(--stardust); }
+
+  /* ===== WORLD MAP ===== */
+  #screen-map {
+    background: linear-gradient(180deg, #1a0a4a 0%, #2d1b69 50%, #4a2080 100%);
+    flex-direction: column;
+    align-items: center;
+  }
+  .map-header {
+    padding: 20px;
+    text-align: center;
+    z-index: 2;
+    width: 100%;
+  }
+  .map-header h1 {
+    font-family: 'Fredoka One';
+    font-size: clamp(24px, 4vw, 42px);
+    color: var(--stardust);
+    text-shadow: 0 0 20px rgba(255,233,122,0.5);
+  }
+  .map-header p { color: var(--blossom); font-size: clamp(14px, 2vw, 20px); }
+  .map-scroll {
+    flex: 1;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: flex;
+    align-items: center;
+    padding: 20px 40px;
+    z-index: 2;
+  }
+  .map-trail {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-width: max-content;
+    position: relative;
+  }
+  .map-connector {
+    width: 60px;
+    height: 8px;
+    background: linear-gradient(90deg, rgba(200,170,255,0.3), rgba(200,170,255,0.6), rgba(200,170,255,0.3));
+    border-radius: 4px;
+    position: relative;
+  }
+  .map-connector::after {
+    content: '✦';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--stardust);
+    font-size: 16px;
+    animation: twinkle 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { 0% { opacity: 0.3; } 100% { opacity: 1; } }
+
+  .world-island {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 4px solid rgba(255,255,255,0.3);
+    font-family: 'Fredoka One';
+    text-align: center;
+    z-index: 2;
+    user-select: none;
+  }
+  .world-island:hover:not(.locked) { transform: scale(1.1); }
+  .world-island.locked { opacity: 0.5; cursor: default; filter: grayscale(0.6); }
+  .world-island .world-num {
+    font-size: 28px;
+    color: white;
+    line-height: 1;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  }
+  .world-island .world-name-label {
+    font-family: 'Nunito';
+    font-size: 11px;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.2;
+    padding: 0 8px;
+  }
+  .world-island .world-stars {
+    font-size: 16px;
+    margin-top: 4px;
+  }
+  .world-island .lock-icon {
+    font-size: 32px;
+    position: absolute;
+  }
+  .world-island .current-lumi {
+    position: absolute;
+    top: -28px;
+    animation: lumiHover 1s ease-in-out infinite alternate;
+  }
+  @keyframes lumiHover { 0% { transform: translateY(0); } 100% { transform: translateY(-6px); } }
+
+  .map-back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+  }
+
+  /* ===== WORLD INTRO ===== */
+  #screen-intro {
+    background: var(--deep);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .intro-panel {
+    background: var(--cloud);
+    border-radius: 28px;
+    padding: 32px;
+    max-width: 600px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+  .intro-world-title {
+    font-family: 'Fredoka One';
+    font-size: clamp(28px, 4vw, 48px);
+    color: var(--deep);
+    margin-bottom: 12px;
+  }
+  .intro-story {
+    font-size: clamp(16px, 2.5vw, 22px);
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .intro-tables {
+    background: linear-gradient(135deg, var(--sky), var(--blossom));
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+    font-family: 'Fredoka One';
+    font-size: clamp(18px, 2.5vw, 26px);
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .intro-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .btn-go {
+    font-family: 'Fredoka One';
+    font-size: clamp(20px, 3vw, 28px);
+    background: linear-gradient(135deg, var(--correct), #3ab84f);
+    color: white;
+    border: none;
+    border-radius: var(--btn-radius);
+    padding: 14px 40px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(92,219,111,0.4);
+    transition: transform 0.1s;
+    min-height: 60px;
+  }
+  .btn-go:hover { transform: translateY(-3px); }
+  .btn-skip {
+    font-family: 'Nunito';
+    font-size: clamp(16px, 2vw, 22px);
+    background: transparent;
+    color: #888;
+    border: 2px solid #ccc;
+    border-radius: var(--btn-radius);
+    padding: 14px 28px;
+    cursor: pointer;
+    transition: color 0.2s;
+    min-height: 60px;
+  }
+  .btn-skip:hover { color: var(--deep); border-color: var(--deep); }
+
+  /* ===== GAME SCREEN ===== */
+  #screen-game {
+    background: var(--cloud);
+    flex-direction: column;
+    align-items: stretch;
+    position: relative;
+    overflow: hidden;
+  }
+  .game-bg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    transition: background 0.8s;
+  }
+  .game-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px 8px;
+    z-index: 10;
+    position: relative;
+  }
+  .lives-display {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .heart {
+    font-size: 28px;
+    transition: transform 0.2s, opacity 0.3s;
+  }
+  .heart.lost { opacity: 0.25; transform: scale(0.8); }
+  .world-label {
+    font-family: 'Fredoka One';
+    font-size: clamp(14px, 2vw, 20px);
+    color: var(--deep);
+    text-align: center;
+    opacity: 0.8;
+  }
+  .stage-label {
+    font-family: 'Nunito';
+    font-size: clamp(12px, 1.5vw, 16px);
+    color: var(--deep);
+    opacity: 0.6;
+    text-align: right;
+  }
+
+  /* Progress trail */
+  .progress-trail {
+    height: 14px;
+    background: rgba(45,27,105,0.1);
+    border-radius: 7px;
+    margin: 0 20px 8px;
+    overflow: hidden;
+    z-index: 10;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sky), var(--stardust), var(--blossom));
+    border-radius: 7px;
+    transition: width 0.5s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: progressShine 2s linear infinite;
+  }
+  @keyframes progressShine {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  .progress-star {
+    position: absolute;
+    right: -6px; top: -4px;
+    font-size: 22px;
+    animation: starPulse 1s ease-in-out infinite alternate;
+  }
+  @keyframes starPulse { 0% { transform: scale(1); } 100% { transform: scale(1.3); } }
+
+  /* Game main area */
+  .game-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    padding: 0 20px;
+    gap: 12px;
+    position: relative;
+  }
+
+  /* Timer */
+  .timer-bar {
+    width: 100%;
+    max-width: 500px;
+    height: 10px;
+    background: rgba(45,27,105,0.1);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .timer-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--correct), var(--stardust));
+    border-radius: 5px;
+    transition: width 0.1s linear, background 0.5s;
+  }
+  .timer-fill.urgent { background: linear-gradient(90deg, var(--oops), #ff5500); }
+  .timer-text {
+    font-family: 'Fredoka One';
+    font-size: 22px;
+    color: var(--deep);
+    opacity: 0.7;
+  }
+
+  /* Question display */
+  .question-display {
+    font-family: 'Fredoka One';
+    font-size: clamp(40px, 8vw, 80px);
+    color: var(--deep);
+    text-align: center;
+    line-height: 1;
+    text-shadow: 0 3px 0 rgba(45,27,105,0.15);
+    animation: questionPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes questionPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .question-type-label {
+    font-family: 'Nunito';
+    font-size: clamp(14px, 2vw, 18px);
+    color: var(--deep);
+    opacity: 0.5;
+    text-align: center;
+  }
+
+  /* Answer input */
+  .answer-display {
+    font-family: 'Fredoka One';
+    font-size: clamp(36px, 6vw, 60px);
+    min-width: 160px;
+    min-height: 80px;
+    background: white;
+    border: 4px solid var(--sky);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--deep);
+    box-shadow: 0 4px 16px rgba(200,170,255,0.3);
+    transition: border-color 0.2s, transform 0.1s;
+    padding: 0 16px;
+  }
+  .answer-display.flash-correct {
+    border-color: var(--correct);
+    background: #e8fff0;
+    animation: flashBounce 0.4s ease;
+  }
+  .answer-display.flash-wrong {
+    border-color: var(--oops);
+    background: #fff0ec;
+    animation: flashShake 0.4s ease;
+  }
+  @keyframes flashBounce {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  @keyframes flashShake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+    100% { transform: translateX(0); }
+  }
+  .answer-cursor {
+    display: inline-block;
+    width: 3px;
+    height: 0.8em;
+    background: var(--deep);
+    margin-left: 4px;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  /* Number Pad */
+  .numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-width: 320px;
+    width: 100%;
+  }
+  .numpad-btn {
+    font-family: 'Fredoka One';
+    font-size: clamp(24px, 4vw, 36px);
+    background: white;
+    color: var(--deep);
+    border: 3px solid var(--sky);
+    border-radius: 18px;
+    height: 70px;
+    cursor: pointer;
+    transition: transform 0.08s, background 0.1s, box-shadow 0.1s;
+    box-shadow: 0 4px 12px rgba(200,170,255,0.25), 0 2px 0 rgba(200,170,255,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .numpad-btn:hover { background: #f0eaff; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(200,170,255,0.4); }
+  .numpad-btn:active { transform: translateY(1px) scale(0.97); background: #e0d4ff; }
+  .numpad-btn.btn-backspace { font-size: 28px; }
+  .numpad-btn.btn-confirm {
+    background: linear-gradient(135deg, var(--correct), #3ab84f);
+    color: white;
+    border-color: #3ab84f;
+    font-size: 32px;
+  }
+  .numpad-btn.btn-confirm:hover { background: linear-gradient(135deg, #4de860, #2da040); }
+  .numpad-btn.btn-skip-q {
+    background: rgba(200,170,255,0.15);
+    font-size: 18px;
+    color: #888;
+    border-color: #ddd;
+  }
+
+  /* Multiple choice */
+  .mc-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    max-width: 480px;
+    width: 100%;
+  }
+  .mc-btn {
+    font-family: 'Fredoka One';
+    font-size: clamp(28px, 5vw, 48px);
+    background: white;
+    color: var(--deep);
+    border: 4px solid var(--sky);
+    border-radius: 20px;
+    height: 90px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.1s, border-color 0.1s;
+    box-shadow: 0 6px 20px rgba(200,170,255,0.25), 0 2px 0 rgba(200,170,255,0.4);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mc-btn:hover { transform: translateY(-3px) scale(1.02); background: #f0eaff; }
+  .mc-btn:active { transform: scale(0.97); }
+  .mc-btn.correct { border-color: var(--correct); background: #e8fff0; animation: flashBounce 0.4s; }
+  .mc-btn.wrong { border-color: var(--oops); background: #fff0ec; animation: flashShake 0.4s; }
+
+  /* Missing factor */
+  .missing-factor-display {
+    font-family: 'Fredoka One';
+    font-size: clamp(36px, 7vw, 72px);
+    color: var(--deep);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .missing-factor-display .question-mark {
+    background: var(--sky);
+    border-radius: 16px;
+    padding: 8px 24px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    min-width: 100px;
+    text-align: center;
+  }
+
+  /* Matching game */
+  .match-container {
+    display: flex;
+    gap: 30px;
+    align-items: stretch;
+    max-width: 560px;
+    width: 100%;
+  }
+  .match-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+  .match-item {
+    font-family: 'Fredoka One';
+    font-size: clamp(16px, 2.5vw, 22px);
+    background: white;
+    border: 3px solid var(--sky);
+    border-radius: 16px;
+    padding: 12px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.1s, border-color 0.2s;
+    color: var(--deep);
+    user-select: none;
+  }
+  .match-item:hover { transform: scale(1.03); }
+  .match-item.selected { border-color: var(--stardust); background: #fffbea; }
+  .match-item.matched { border-color: var(--correct); background: #e8fff0; pointer-events: none; }
+  .match-item.wrong-match { border-color: var(--oops); animation: flashShake 0.3s; }
+  .match-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .match-wrapper {
+    position: relative;
+    display: flex;
+    gap: 30px;
+    max-width: 560px;
+    width: 100%;
+  }
+
+  /* Speed round */
+  .speed-question {
+    font-family: 'Fredoka One';
+    font-size: clamp(44px, 9vw, 90px);
+    color: var(--deep);
+    text-align: center;
+    animation: questionPop 0.3s ease;
+  }
+  .speed-counter {
+    font-family: 'Fredoka One';
+    font-size: 24px;
+    color: var(--deep);
+    opacity: 0.6;
+  }
+  .speed-big-timer {
+    font-family: 'Fredoka One';
+    font-size: 56px;
+    color: var(--deep);
+    animation: timerPulse 1s ease-in-out infinite alternate;
+  }
+  @keyframes timerPulse {
+    0% { transform: scale(1); color: var(--deep); }
+    100% { transform: scale(1.05); }
+  }
+  .speed-big-timer.urgent { color: var(--oops); animation: timerPulse 0.3s ease-in-out infinite alternate; }
+
+  /* Faye bubble */
+  .faye-bubble {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .faye-speech {
+    background: white;
+    border: 3px solid var(--blossom);
+    border-radius: 20px;
+    border-bottom-right-radius: 4px;
+    padding: 10px 16px;
+    font-size: clamp(13px, 2vw, 17px);
+    color: var(--deep);
+    max-width: 200px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(255,179,222,0.3);
+    display: none;
+  }
+  .faye-speech.visible { display: block; animation: speechPop 0.3s ease; }
+  @keyframes speechPop {
+    0% { transform: scale(0.7) translateY(10px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .faye-svg {
+    animation: fayeFlutter 1.5s ease-in-out infinite alternate;
+    cursor: pointer;
+  }
+  @keyframes fayeFlutter {
+    0% { transform: translateY(0) rotate(-3deg); }
+    100% { transform: translateY(-8px) rotate(3deg); }
+  }
+
+  /* Feedback overlay */
+  .feedback-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 50;
+    pointer-events: none;
+  }
+  .feedback-overlay.show { display: flex; }
+  .feedback-text {
+    font-family: 'Fredoka One';
+    font-size: clamp(36px, 7vw, 72px);
+    text-align: center;
+    animation: feedbackAnim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  @keyframes feedbackAnim {
+    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+    60% { transform: scale(1.15) rotate(3deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .feedback-text.correct { color: var(--correct); text-shadow: 0 0 30px rgba(92,219,111,0.6); }
+  .feedback-text.wrong { color: var(--oops); }
+
+  /* Sparkle burst */
+  .burst-container {
+    position: absolute;
+    top: 50%; left: 50%;
+    pointer-events: none;
+    z-index: 45;
+  }
+  .burst-particle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    animation: burstOut 0.8s ease forwards;
+  }
+  @keyframes burstOut {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0); opacity: 0; }
+  }
+
+  /* ===== RESULTS SCREEN ===== */
+  #screen-results {
+    background: linear-gradient(160deg, #1a0a4a, #3a1c8a);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .results-panel {
+    background: var(--cloud);
+    border-radius: 32px;
+    padding: 40px;
+    max-width: 520px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    z-index: 2;
+  }
+  .results-title {
+    font-family: 'Fredoka One';
+    font-size: clamp(28px, 5vw, 48px);
+    color: var(--deep);
+    margin-bottom: 16px;
+  }
+  .results-stars {
+    font-size: clamp(40px, 8vw, 64px);
+    margin: 16px 0;
+    animation: starReveal 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes starReveal {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .results-stats {
+    font-size: clamp(16px, 2.5vw, 22px);
+    color: #555;
+    margin-bottom: 24px;
+    line-height: 1.8;
+  }
+  .results-stats span { color: var(--deep); font-weight: 800; }
+  .results-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+  /* ===== BOSS SCREEN ===== */
+  .boss-area {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 12px;
+  }
+  .boss-health {
+    display: flex;
+    gap: 6px;
+  }
+  .boss-heart {
+    font-size: 24px;
+    transition: opacity 0.3s, transform 0.2s;
+  }
+  .boss-heart.lost { opacity: 0.2; transform: scale(0.7); }
+
+  /* ===== PROGRESS SCREEN ===== */
+  #screen-progress {
+    background: linear-gradient(160deg, #1a0a4a, #3a1c8a);
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+  }
+  .progress-header {
+    padding: 30px 20px 10px;
+    text-align: center;
+    z-index: 2;
+  }
+  .progress-header h1 {
+    font-family: 'Fredoka One';
+    font-size: clamp(28px, 5vw, 48px);
+    color: var(--stardust);
+  }
+  .progress-header p { color: var(--blossom); font-size: 20px; }
+  .progress-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 20px;
+    max-width: 900px;
+    width: 100%;
+    z-index: 2;
+  }
+  .progress-card {
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+  .progress-card .p-world-name {
+    font-family: 'Fredoka One';
+    font-size: 20px;
+    color: white;
+    margin-bottom: 8px;
+  }
+  .progress-card .p-stars { font-size: 28px; }
+  .progress-card .p-tables {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 8px;
+  }
+  .progress-back {
+    margin-bottom: 30px;
+    z-index: 2;
+  }
+
+  /* ===== CERTIFICATE ===== */
+  #screen-certificate {
+    background: linear-gradient(160deg, #3a1c8a, #6b2fa0);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+  }
+  .certificate {
+    background: #fffef5;
+    border: 8px solid var(--stardust);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 620px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(255,233,122,0.5), inset 0 0 40px rgba(255,233,122,0.1);
+    z-index: 2;
+  }
+  .cert-title {
+    font-family: 'Fredoka One';
+    font-size: clamp(24px, 5vw, 48px);
+    color: var(--deep);
+    text-shadow: 0 2px 4px rgba(45,27,105,0.2);
+  }
+  .cert-sub {
+    font-size: clamp(14px, 2.5vw, 22px);
+    color: #666;
+    margin: 12px 0;
+  }
+  .cert-name {
+    font-family: 'Fredoka One';
+    font-size: clamp(28px, 5vw, 52px);
+    color: var(--deep);
+    border-bottom: 3px solid var(--stardust);
+    display: inline-block;
+    padding-bottom: 8px;
+    margin: 16px 0;
+    min-width: 200px;
+  }
+  .cert-tables {
+    font-size: clamp(14px, 2vw, 20px);
+    color: #555;
+    margin: 16px 0;
+    line-height: 1.8;
+  }
+  .cert-stars { font-size: clamp(32px, 6vw, 56px); margin: 16px 0; }
+  .cert-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes lumiWiggle {
+    0% { transform: rotate(0) scale(1); }
+    25% { transform: rotate(-8deg) scale(1.1); }
+    75% { transform: rotate(8deg) scale(1.1); }
+    100% { transform: rotate(0) scale(1); }
+  }
+  @keyframes lumiDroop {
+    0% { transform: rotate(0) translateY(0); }
+    100% { transform: rotate(-5deg) translateY(8px); }
+  }
+  @keyframes lumiIdle {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-8px); }
+  }
+  .lumi-container {
+    animation: lumiIdle 2s ease-in-out infinite alternate;
+  }
+  .lumi-container.wiggle { animation: lumiWiggle 0.6s ease 2; }
+  .lumi-container.droop { animation: lumiDroop 0.4s ease forwards; }
+
+  /* Notification toasts */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: white;
+    border-radius: 20px;
+    padding: 12px 24px;
+    font-family: 'Fredoka One';
+    font-size: 22px;
+    color: var(--deep);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    z-index: 200;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 3px solid var(--sky);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Hint box */
+  .hint-box {
+    background: rgba(200,170,255,0.15);
+    border: 2px dashed var(--sky);
+    border-radius: 16px;
+    padding: 12px 20px;
+    font-size: clamp(14px, 2vw, 18px);
+    color: var(--deep);
+    max-width: 400px;
+    text-align: center;
+    display: none;
+  }
+  .hint-box.visible { display: block; animation: speechPop 0.3s ease; }
+
+  /* World color themes */
+  .world-theme-1 { background: linear-gradient(160deg, #a8f0c0 0%, #d4f5e0 50%, #f0fff4 100%); }
+  .world-theme-2 { background: linear-gradient(160deg, #6a3aaa 0%, #9b5de5 50%, #c8b4ff 100%); }
+  .world-theme-3 { background: linear-gradient(160deg, #1a5e3a 0%, #2d8a5a 50%, #a8edbb 100%); }
+  .world-theme-4 { background: linear-gradient(160deg, #1a5a9a 0%, #2e86de 50%, #96d5ff 100%); }
+  .world-theme-5 { background: linear-gradient(160deg, #8c9eff 0%, #b0c4ff 50%, #e8eeff 100%); }
+  .world-theme-6 { background: linear-gradient(160deg, #1a0a30 0%, #3d1c6e 50%, #7b52ab 100%); }
+  .world-theme-7 { background: linear-gradient(160deg, #1a0a1a 0%, #4a0a4a 50%, #8b2be2 100%); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  @media (max-height: 600px) {
+    .numpad-btn { height: 55px; font-size: 22px; }
+    .mc-btn { height: 70px; font-size: 26px; }
+    .game-main { gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== TITLE SCREEN ===== -->
+<div id="screen-title" class="screen active">
+  <div class="sparkle-bg" id="title-sparks"></div>
+
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:20px;">
+    <div class="title-lumi">
+      <svg width="180" height="150" viewBox="0 0 180 150" xmlns="http://www.w3.org/2000/svg">
+        <!-- Lumi the Unicorn - Full SVG -->
+        <!-- Body -->
+        <ellipse cx="90" cy="100" rx="55" ry="38" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <!-- Legs -->
+        <rect x="60" y="128" width="14" height="22" rx="7" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <rect x="80" y="130" width="14" height="20" rx="7" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <rect x="100" y="130" width="14" height="20" rx="7" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <rect x="116" y="128" width="14" height="22" rx="7" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <!-- Hooves -->
+        <ellipse cx="67" cy="150" rx="8" ry="5" fill="#d4c8f8"/>
+        <ellipse cx="87" cy="150" rx="8" ry="5" fill="#d4c8f8"/>
+        <ellipse cx="107" cy="150" rx="8" ry="5" fill="#d4c8f8"/>
+        <ellipse cx="123" cy="150" rx="8" ry="5" fill="#d4c8f8"/>
+        <!-- Neck -->
+        <ellipse cx="75" cy="80" rx="22" ry="28" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <!-- Head -->
+        <ellipse cx="68" cy="52" rx="28" ry="24" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <!-- Snout -->
+        <ellipse cx="50" cy="58" rx="14" ry="10" fill="#fff0f8" stroke="#e8e0f8" stroke-width="1.5"/>
+        <!-- Nostril -->
+        <ellipse cx="45" cy="60" rx="3" ry="2" fill="#ffb3de"/>
+        <!-- Eye -->
+        <circle cx="62" cy="48" r="7" fill="#2d1b69"/>
+        <circle cx="64" cy="46" r="2.5" fill="white"/>
+        <circle cx="62" cy="48" r="3" fill="#1a0a40"/>
+        <!-- Eyelashes -->
+        <line x1="57" y1="43" x2="54" y2="40" stroke="#2d1b69" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="62" y1="41" x2="61" y2="38" stroke="#2d1b69" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="67" y1="43" x2="68" y2="40" stroke="#2d1b69" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- Horn -->
+        <polygon points="68,28 62,8 74,28" fill="url(#hornGrad)"/>
+        <line x1="64" y1="25" x2="67" y2="15" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+        <!-- Ear -->
+        <polygon points="80,36 90,20 95,38" fill="white" stroke="#e8e0f8" stroke-width="1.5"/>
+        <polygon points="82,36 90,24 93,38" fill="#ffb3de"/>
+        <!-- Rainbow Mane -->
+        <path d="M90,30 C105,20 120,30 118,50 C116,65 105,68 100,75" stroke="#FF6B6B" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M90,32 C107,22 122,32 120,52 C118,67 107,70 102,77" stroke="#FFE97A" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M90,34 C109,24 124,34 122,54 C120,69 109,72 104,79" stroke="#A8EDBB" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M90,36 C111,26 126,36 124,56 C122,71 111,74 106,81" stroke="#C8AAFF" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- Tail -->
+        <path d="M140,95 C165,80 170,100 165,115 C160,130 150,125 155,135" stroke="#FF6B6B" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M140,98 C167,83 172,103 167,118 C162,133 152,128 157,138" stroke="#FFE97A" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M140,101 C169,86 174,106 169,121 C164,136 154,131 159,141" stroke="#C8AAFF" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <!-- Blush -->
+        <ellipse cx="54" cy="58" rx="6" ry="4" fill="#ffb3de" opacity="0.5"/>
+        <!-- Defs -->
+        <defs>
+          <linearGradient id="hornGrad" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="#FFD700"/>
+            <stop offset="100%" stop-color="#FFF8DC"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="title-text">Stardust Multiplication Quest</div>
+    <div class="title-sub">Join Lumi &amp; Faye on a magical math adventure! ✨</div>
+
+    <div class="title-btns">
+      <button class="btn-primary" onclick="GameApp.startGame()" aria-label="Play the game">🌟 Let's Play!</button>
+      <button class="btn-secondary" onclick="GameApp.showProgress()" aria-label="View my stars">💜 My Stars</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WORLD MAP ===== -->
+<div id="screen-map" class="screen">
+  <div class="sparkle-bg" id="map-sparks"></div>
+  <button class="btn-secondary map-back-btn" onclick="GameApp.showTitle()" aria-label="Go back to title" style="position:absolute;top:16px;left:16px;font-size:16px;padding:8px 20px;min-height:48px;z-index:10;">← Back</button>
+  <div class="map-header">
+    <h1>🗺️ Magical World Map</h1>
+    <p id="map-player-name">Welcome, young wizard!</p>
+  </div>
+  <div class="map-scroll">
+    <div class="map-trail" id="map-trail"></div>
+  </div>
+</div>
+
+<!-- ===== WORLD INTRO ===== -->
+<div id="screen-intro" class="screen">
+  <div class="sparkle-bg" id="intro-sparks"></div>
+  <div class="intro-panel" style="z-index:2;">
+    <div id="intro-world-emoji" style="font-size:56px;margin-bottom:8px;"></div>
+    <div class="intro-world-title" id="intro-world-title">World 1: Clover Meadow</div>
+    <div class="intro-story" id="intro-story">Story text here...</div>
+    <div class="intro-tables" id="intro-tables">Practicing: ×1 and ×2</div>
+    <div class="intro-btns">
+      <button class="btn-go" onclick="GameApp.startWorldGame()" aria-label="Start playing">🚀 Let's Go!</button>
+      <button class="btn-skip" onclick="GameApp.startWorldGame()" aria-label="Skip intro">Skip Intro</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="screen-game" class="screen">
+  <div class="game-bg" id="game-bg"></div>
+
+  <!-- Top bar -->
+  <div class="game-top-bar">
+    <div class="lives-display" id="lives-display">
+      <span class="heart" id="heart-1" aria-label="life 1">💜</span>
+      <span class="heart" id="heart-2" aria-label="life 2">💜</span>
+      <span class="heart" id="heart-3" aria-label="life 3">💜</span>
+    </div>
+    <div>
+      <div class="world-label" id="game-world-label">Clover Meadow</div>
+      <div class="stage-label" id="game-stage-label">Stage 1 of 5</div>
+    </div>
+    <div style="width:80px;text-align:right;">
+      <button onclick="GameApp.showMap()" style="background:none;border:none;font-size:24px;cursor:pointer;opacity:0.6;" aria-label="Return to map">🗺️</button>
+    </div>
+  </div>
+
+  <!-- Progress trail -->
+  <div class="progress-trail">
+    <div class="progress-fill" id="progress-fill" style="width:0%;">
+      <span class="progress-star">⭐</span>
+    </div>
+  </div>
+
+  <!-- Timer bar -->
+  <div style="padding:0 20px 4px;z-index:10;position:relative;">
+    <div class="timer-bar" id="timer-bar" style="display:none;">
+      <div class="timer-fill" id="timer-fill" style="width:100%;"></div>
+    </div>
+  </div>
+
+  <!-- Game main -->
+  <div class="game-main" id="game-main">
+    <!-- Dynamic content injected here -->
+  </div>
+
+  <!-- Faye bubble -->
+  <div class="faye-bubble">
+    <div class="faye-speech" id="faye-speech"></div>
+    <svg class="faye-svg" width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-label="Faye the Fairy">
+      <!-- Faye the Fairy -->
+      <!-- Wings (back) -->
+      <ellipse cx="25" cy="42" rx="18" ry="10" fill="rgba(255,179,222,0.6)" transform="rotate(-30 25 42)"/>
+      <ellipse cx="55" cy="42" rx="18" ry="10" fill="rgba(255,179,222,0.6)" transform="rotate(30 55 42)"/>
+      <!-- Wings (front tips) -->
+      <ellipse cx="22" cy="38" rx="10" ry="6" fill="rgba(200,170,255,0.5)" transform="rotate(-20 22 38)"/>
+      <ellipse cx="58" cy="38" rx="10" ry="6" fill="rgba(200,170,255,0.5)" transform="rotate(20 58 38)"/>
+      <!-- Body -->
+      <ellipse cx="40" cy="54" rx="12" ry="16" fill="#FFB3DE"/>
+      <!-- Dress details -->
+      <ellipse cx="40" cy="60" rx="14" ry="10" fill="#FF8CC8"/>
+      <!-- Head -->
+      <circle cx="40" cy="32" r="14" fill="#FFDCA8"/>
+      <!-- Hair -->
+      <ellipse cx="40" cy="22" rx="14" ry="8" fill="#FFD700"/>
+      <ellipse cx="30" cy="28" rx="8" ry="12" fill="#FFD700"/>
+      <ellipse cx="50" cy="28" rx="8" ry="12" fill="#FFD700"/>
+      <!-- Eyes -->
+      <circle cx="35" cy="32" r="4" fill="#2d1b69"/>
+      <circle cx="45" cy="32" r="4" fill="#2d1b69"/>
+      <circle cx="36" cy="31" r="1.5" fill="white"/>
+      <circle cx="46" cy="31" r="1.5" fill="white"/>
+      <!-- Smile -->
+      <path d="M34 39 Q40 44 46 39" stroke="#2d1b69" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Blush -->
+      <ellipse cx="30" cy="37" rx="5" ry="3" fill="#FF8CC8" opacity="0.5"/>
+      <ellipse cx="50" cy="37" rx="5" ry="3" fill="#FF8CC8" opacity="0.5"/>
+      <!-- Wand -->
+      <line x1="56" y1="50" x2="70" y2="30" stroke="#C8AAFF" stroke-width="3" stroke-linecap="round"/>
+      <polygon points="70,26 73,33 67,33" fill="#FFE97A"/>
+      <circle cx="70" cy="26" r="5" fill="#FFE97A" opacity="0.8"/>
+      <!-- Sparkles from wand -->
+      <circle cx="68" cy="20" r="2" fill="#FFE97A" opacity="0.8"/>
+      <circle cx="74" cy="24" r="1.5" fill="#C8AAFF" opacity="0.8"/>
+      <circle cx="64" cy="18" r="1" fill="white" opacity="0.9"/>
+    </svg>
+  </div>
+
+  <!-- Feedback overlay -->
+  <div class="feedback-overlay" id="feedback-overlay">
+    <div class="feedback-text" id="feedback-text"></div>
+  </div>
+
+  <!-- Hint box -->
+  <div class="hint-box" id="hint-box" style="position:absolute;bottom:120px;left:50%;transform:translateX(-50%);z-index:15;"></div>
+
+  <!-- Burst container -->
+  <div class="burst-container" id="burst-container"></div>
+</div>
+
+<!-- ===== RESULTS SCREEN ===== -->
+<div id="screen-results" class="screen">
+  <div class="sparkle-bg" id="results-sparks"></div>
+  <div class="results-panel" style="z-index:2;">
+    <div id="results-lumi" style="text-align:center;margin-bottom:10px;">
+      <svg width="120" height="100" viewBox="0 0 180 150" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="90" cy="100" rx="55" ry="38" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <rect x="60" y="128" width="14" height="22" rx="7" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <rect x="80" y="130" width="14" height="20" rx="7" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <rect x="100" y="130" width="14" height="20" rx="7" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <rect x="116" y="128" width="14" height="22" rx="7" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <ellipse cx="67" cy="150" rx="8" ry="5" fill="#d4c8f8"/>
+        <ellipse cx="87" cy="150" rx="8" ry="5" fill="#d4c8f8"/>
+        <ellipse cx="107" cy="150" rx="8" ry="5" fill="#d4c8f8"/>
+        <ellipse cx="123" cy="150" rx="8" ry="5" fill="#d4c8f8"/>
+        <ellipse cx="75" cy="80" rx="22" ry="28" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <ellipse cx="68" cy="52" rx="28" ry="24" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <ellipse cx="50" cy="58" rx="14" ry="10" fill="#fff0f8" stroke="#e8e0f8" stroke-width="1.5"/>
+        <ellipse cx="45" cy="60" rx="3" ry="2" fill="#ffb3de"/>
+        <circle cx="62" cy="48" r="7" fill="#2d1b69"/>
+        <circle cx="64" cy="46" r="2.5" fill="white"/>
+        <polygon points="68,28 62,8 74,28" fill="url(#hornGrad2)"/>
+        <polygon points="80,36 90,20 95,38" fill="white" stroke="#e8e0f8" stroke-width="1.5"/>
+        <polygon points="82,36 90,24 93,38" fill="#ffb3de"/>
+        <path d="M90,30 C105,20 120,30 118,50 C116,65 105,68 100,75" stroke="#FF6B6B" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M90,34 C109,24 124,34 122,54 C120,69 109,72 104,79" stroke="#A8EDBB" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M90,36 C111,26 126,36 124,56 C122,71 111,74 106,81" stroke="#C8AAFF" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M140,95 C165,80 170,100 165,115 C160,130 150,125 155,135" stroke="#FF6B6B" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M140,101 C169,86 174,106 169,121 C164,136 154,131 159,141" stroke="#C8AAFF" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="54" cy="58" rx="6" ry="4" fill="#ffb3de" opacity="0.5"/>
+        <defs>
+          <linearGradient id="hornGrad2" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="#FFD700"/>
+            <stop offset="100%" stop-color="#FFF8DC"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="results-title" id="results-title">World Complete!</div>
+    <div class="results-stars" id="results-stars">⭐⭐⭐</div>
+    <div class="results-stats" id="results-stats"></div>
+    <div class="results-btns">
+      <button class="btn-go" id="results-next-btn" onclick="GameApp.goToNextWorld()" aria-label="Continue to next world">Next World →</button>
+      <button class="btn-secondary" onclick="GameApp.showMap()" aria-label="Return to map">🗺️ World Map</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROGRESS SCREEN ===== -->
+<div id="screen-progress" class="screen">
+  <div class="sparkle-bg" id="progress-sparks"></div>
+  <div class="progress-header">
+    <h1>✨ My Magic Stars</h1>
+    <p id="progress-player"></p>
+  </div>
+  <div class="progress-grid" id="progress-grid"></div>
+  <div class="progress-back">
+    <button class="btn-secondary" onclick="GameApp.showTitle()" aria-label="Back to title">← Back to Title</button>
+  </div>
+</div>
+
+<!-- ===== CERTIFICATE ===== -->
+<div id="screen-certificate" class="screen">
+  <div class="certificate">
+    <div style="font-size:48px;margin-bottom:8px;">🦄✨🌟</div>
+    <div class="cert-title">Certificate of Achievement</div>
+    <div class="cert-sub">This certifies that</div>
+    <div class="cert-name" id="cert-name">Young Wizard</div>
+    <div class="cert-sub">has mastered all multiplication tables!</div>
+    <div class="cert-tables">Tables ×1 through ×12 — all conquered with magic and courage! 🎉</div>
+    <div class="cert-stars">⭐⭐⭐⭐⭐⭐⭐</div>
+    <div class="cert-btns">
+      <button class="btn-primary" onclick="window.print()" aria-label="Print certificate">🖨️ Print!</button>
+      <button class="btn-secondary" onclick="GameApp.showTitle()" aria-label="Back to title">🏠 Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NAME OVERLAY ===== -->
+<div class="name-overlay" id="name-overlay" style="display:none;">
+  <div class="name-box">
+    <h2>✨ Welcome!</h2>
+    <p>What's your magical name?</p>
+    <input type="text" class="name-input" id="name-input" placeholder="Enter your name" maxlength="20" aria-label="Enter your name">
+    <button class="btn-primary" onclick="GameApp.saveName()" style="width:100%;" aria-label="Start adventure">🦄 Start My Adventure!</button>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<script>
+// ===========================
+// CONFIG
+// ===========================
+const CONFIG = {
+  worlds: [
+    {
+      id: 1, name: "Clover Meadow", emoji: "🌿",
+      tables: [1, 2], setting: "Sunny green hills",
+      color: "world-theme-1", textColor: "#1a4a2a",
+      story: "Lumi the Unicorn loves counting clovers! The meadow fairies need groups of flowers sorted. Help Lumi count them in twos! 🌸",
+      stageTypes: ['B', 'B', 'B', 'B', 'BOSS'],
+      timer: 0, choices: 3
+    },
+    {
+      id: 2, name: "Crystal Caves", emoji: "💎",
+      tables: [1, 2, 3, 4], setting: "Glowing gem tunnels",
+      color: "world-theme-2", textColor: "#ffffff",
+      story: "Deep in the Crystal Caves, magical gems glow with multiplication power! Help Lumi and Faye count the glittering crystals. 💜",
+      stageTypes: ['A', 'B', 'A', 'B', 'BOSS'],
+      timer: 0, choices: 4
+    },
+    {
+      id: 3, name: "Fairy Forest", emoji: "🍄",
+      tables: [1, 2, 3, 4, 5, 6], setting: "Enchanted mushroom woods",
+      color: "world-theme-3", textColor: "#ffffff",
+      story: "The Fairy Forest is full of magical mushrooms! Each has a mystery number. Use your ×5 and ×6 powers to unlock the path! 🌿",
+      stageTypes: ['A', 'B', 'C', 'E', 'BOSS'],
+      timer: 20, choices: 4
+    },
+    {
+      id: 4, name: "Rainbow River", emoji: "🌈",
+      tables: [1, 2, 3, 4, 5, 6, 7, 8], setting: "Floating islands",
+      color: "world-theme-4", textColor: "#ffffff",
+      story: "The rainbow bridge is broken! Each piece has a secret number. Lumi needs your ×7 and ×8 powers to rebuild it! 🌈",
+      stageTypes: ['A', 'C', 'D', 'E', 'BOSS'],
+      timer: 15, choices: 4
+    },
+    {
+      id: 5, name: "Cloud Kingdom", emoji: "☁️",
+      tables: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], setting: "Sky castles",
+      color: "world-theme-5", textColor: "#2d1b69",
+      story: "High above the clouds, the Cloud Kingdom floats in the sky! Master ×9 and ×10 to open the castle gates. ✨",
+      stageTypes: ['A', 'C', 'D', 'E', 'BOSS'],
+      timer: 12, choices: 4
+    },
+    {
+      id: 6, name: "Stardust Peak", emoji: "🌟",
+      tables: [1,2,3,4,5,6,7,8,9,10,11,12], setting: "Space mountain",
+      color: "world-theme-6", textColor: "#ffffff",
+      story: "At the very top of Stardust Peak, ×11 and ×12 hold the secrets of the universe! Lumi and Faye are counting on you! 🌟",
+      stageTypes: ['A', 'C', 'D', 'E', 'BOSS'],
+      timer: 12, choices: 4
+    },
+    {
+      id: 7, name: "The Grand Quest", emoji: "🏆",
+      tables: [1,2,3,4,5,6,7,8,9,10,11,12], setting: "All worlds",
+      color: "world-theme-7", textColor: "#ffffff",
+      story: "The ancient Stardust Dragon has scattered math stars across ALL the worlds! Only a true Multiplication Master can gather them back! 🐉",
+      stageTypes: ['A', 'D', 'C', 'E', 'BOSS'],
+      timer: 10, choices: 4
+    }
+  ],
+  praiseMessages: [
+    "✨ Magical!", "🌟 Stardust Smart!", "🦄 Lumi is dancing!", "💜 You're a wizard!",
+    "🎉 Wow, so fast!", "⭐ Brilliant!", "🌈 Rainbow brilliant!", "💫 Dazzling!"
+  ],
+  oopsMessages: [
+    "Oops! Let's try again 💜", "So close! Give it another go ✨", "Almost there! Try once more 🌟",
+    "Hmm, not quite! You've got this 💪", "Nearly! One more try 🦄"
+  ],
+  fayeMessages: [
+    "You can do it! 🧚", "Think carefully! ✨", "Lumi believes in you! 🦄", "Magic powers, activate! 💜",
+    "So close to the stars! 🌟"
+  ],
+  hintMessages: [
+    ["Try counting by groups! 🌸", "Picture {a} groups of {b} flowers!", "The answer is {ans}! 🎉"],
+    ["Remember: multiplication is repeated addition! ✨", "Try adding {a} together {b} times!", "The answer is {ans}! You've got this! 💜"]
+  ]
+};
+
+// ===========================
+// STATE
+// ===========================
+const STATE = {
+  playerName: '',
+  worldProgress: {}, // {worldId: {stars: 0, completed: false}}
+  currentWorld: null,
+  currentStageIdx: 0,
+  currentQuestion: null,
+  answeredCount: 0,
+  wrongCount: 0,
+  hintLevel: 0,
+  lives: 3,
+  score: 0,
+  timer: null,
+  timerLeft: 0,
+  timerMax: 0,
+  recentQuestions: [],
+  stageQuestions: [],
+  stageQIdx: 0,
+  currentStageType: null,
+  matchState: null,
+  speedState: null,
+  bossHealth: 3,
+  totalWrong: 0,
+  hintsUsed: 0
+};
+
+// ===========================
+// STORAGE
+// ===========================
+const Storage = {
+  save() {
+    localStorage.setItem('stardust_name', STATE.playerName);
+    localStorage.setItem('stardust_progress', JSON.stringify(STATE.worldProgress));
+  },
+  load() {
+    STATE.playerName = localStorage.getItem('stardust_name') || '';
+    const p = localStorage.getItem('stardust_progress');
+    STATE.worldProgress = p ? JSON.parse(p) : {};
+    // Ensure world 1 is always accessible
+    if (!STATE.worldProgress[1]) STATE.worldProgress[1] = { stars: 0, completed: false };
+  },
+  getStars(worldId) {
+    return (STATE.worldProgress[worldId] || {}).stars || 0;
+  },
+  isUnlocked(worldId) {
+    if (worldId === 1) return true;
+    const prev = STATE.worldProgress[worldId - 1] || {};
+    return prev.stars >= 2;
+  },
+  setResult(worldId, stars) {
+    const existing = (STATE.worldProgress[worldId] || {}).stars || 0;
+    STATE.worldProgress[worldId] = {
+      stars: Math.max(stars, existing),
+      completed: true
+    };
+    Storage.save();
+  }
+};
+
+// ===========================
+// AUDIO
+// ===========================
+const Audio = (() => {
+  let ctx = null;
+  function getCtx() {
+    if (!ctx) {
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    }
+    return ctx;
+  }
+  function play(freq, duration, type='sine', vol=0.3) {
+    const c = getCtx();
+    if (!c) return;
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.connect(gain);
+    gain.connect(c.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, c.currentTime);
+    gain.gain.setValueAtTime(vol, c.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + duration);
+    osc.start(c.currentTime);
+    osc.stop(c.currentTime + duration);
+  }
+  return {
+    correct() {
+      play(523, 0.1); setTimeout(() => play(659, 0.1), 100); setTimeout(() => play(784, 0.2), 200);
+    },
+    wrong() {
+      play(300, 0.15, 'sawtooth', 0.15); setTimeout(() => play(250, 0.2, 'sawtooth', 0.1), 150);
+    },
+    levelUp() {
+      [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => play(f, 0.2), i * 120));
+    },
+    tick() { play(800, 0.05, 'square', 0.08); },
+    click() { play(660, 0.05, 'sine', 0.1); }
+  };
+})();
+
+// ===========================
+// QUESTION GENERATION
+// ===========================
+const QGen = {
+  generate(tables, type, avoid=[]) {
+    const validTables = tables.filter(t => t >= 1 && t <= 12);
+    // Weight recent tables more
+    const recentTables = validTables.slice(-2);
+    const pool = [];
+    for (let i = 0; i < 7; i++) pool.push(...recentTables);
+    for (let i = 0; i < 3; i++) pool.push(...validTables);
+
+    let attempts = 0;
+    let q;
+    do {
+      const table = pool[Math.floor(Math.random() * pool.length)];
+      const factor = Math.floor(Math.random() * 12) + 1;
+      const a = Math.random() < 0.5 ? table : factor;
+      const b = a === table ? factor : table;
+      const ans = a * b;
+      const key = `${a}×${b}`;
+      q = { a, b, ans, key, type };
+      attempts++;
+    } while (avoid.includes(q.key) && attempts < 20);
+
+    return q;
+  },
+
+  distractors(correct, count=3) {
+    const opts = new Set([correct]);
+    const nearby = [correct-1, correct+1, correct-correct%10, correct+10, correct-5, correct+5, correct*2, Math.floor(correct/2)];
+    for (const n of nearby) {
+      if (n > 0 && n !== correct) opts.add(n);
+      if (opts.size >= count + 1) break;
+    }
+    while (opts.size < count + 1) {
+      const r = Math.max(1, correct + Math.floor(Math.random() * 20) - 10);
+      if (r !== correct) opts.add(r);
+    }
+    return [...opts].slice(0, count + 1);
+  },
+
+  generateStage(world, stageType) {
+    const tables = world.tables;
+    const questions = [];
+    const numQ = stageType === 'D' ? 5 : stageType === 'BOSS' ? (world.id === 7 ? 12 : 8) : 5;
+
+    for (let i = 0; i < numQ; i++) {
+      const avoid = questions.slice(-3).map(q => q.key);
+      let q = QGen.generate(tables, stageType, avoid);
+
+      if (stageType === 'C') {
+        // Missing factor
+        const missingLeft = Math.random() < 0.5;
+        q.missing = missingLeft ? 'a' : 'b';
+        q.display = missingLeft ? `? × ${q.b} = ${q.ans}` : `${q.a} × ? = ${q.ans}`;
+        q.answerVal = missingLeft ? q.a : q.b;
+      } else if (stageType === 'B' || stageType === 'BOSS_MC') {
+        q.choices = QGen.distractors(q.ans, world.choices || 4 - 1);
+        q.choices.sort(() => Math.random() - 0.5);
+      }
+
+      questions.push(q);
+    }
+    return questions;
+  },
+
+  generateMatchSet(tables) {
+    const pairs = [];
+    const used = new Set();
+    while (pairs.length < 4) {
+      const t = tables[Math.floor(Math.random() * tables.length)];
+      const f = Math.floor(Math.random() * 12) + 1;
+      const key = `${t}×${f}`;
+      if (!used.has(key)) {
+        used.add(key);
+        pairs.push({ eq: `${t} × ${f}`, ans: t * f, key });
+      }
+    }
+    return pairs;
+  }
+};
+
+// ===========================
+// SCREENS
+// ===========================
+const Screens = {
+  show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+  }
+};
+
+// ===========================
+// SPARKLES
+// ===========================
+function createSparkles(containerId, count=20) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  const colors = ['#FFE97A','#C8AAFF','#FFB3DE','#A8EDBB','white'];
+  for (let i = 0; i < count; i++) {
+    const spark = document.createElement('div');
+    spark.className = 'spark';
+    const size = 4 + Math.random() * 8;
+    spark.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      bottom:${Math.random()*20}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${3 + Math.random()*5}s;
+      animation-delay:${Math.random()*5}s;
+    `;
+    container.appendChild(spark);
+  }
+}
+
+// ===========================
+// MAIN GAME APP
+// ===========================
+const GameApp = {
+  init() {
+    Storage.load();
+    createSparkles('title-sparks', 30);
+
+    // Keyboard support
+    document.addEventListener('keydown', e => {
+      if (['0','1','2','3','4','5','6','7','8','9'].includes(e.key)) {
+        GameApp.numpadInput(e.key);
+      } else if (e.key === 'Backspace') {
+        GameApp.numpadInput('back');
+      } else if (e.key === 'Enter') {
+        GameApp.numpadInput('confirm');
+      }
+    });
+
+    if (!STATE.playerName) {
+      setTimeout(() => document.getElementById('name-overlay').style.display = 'flex', 500);
+    }
+  },
+
+  saveName() {
+    const input = document.getElementById('name-input');
+    const name = input.value.trim() || 'Young Wizard';
+    STATE.playerName = name;
+    Storage.save();
+    document.getElementById('name-overlay').style.display = 'none';
+  },
+
+  showTitle() {
+    Screens.show('title');
+    createSparkles('title-sparks', 30);
+    // Enter key on name input
+    const ni = document.getElementById('name-input');
+    ni.addEventListener('keydown', e => { if (e.key === 'Enter') GameApp.saveName(); });
+  },
+
+  startGame() {
+    Audio.click();
+    if (!STATE.playerName) {
+      document.getElementById('name-overlay').style.display = 'flex';
+      document.getElementById('name-input').focus();
+      // Override button
+      document.querySelector('.name-box button').onclick = () => {
+        GameApp.saveName();
+        GameApp.showMap();
+      };
+      return;
+    }
+    GameApp.showMap();
+  },
+
+  showMap() {
+    Audio.click();
+    createSparkles('map-sparks', 25);
+    const nameEl = document.getElementById('map-player-name');
+    nameEl.textContent = `Welcome, ${STATE.playerName || 'Young Wizard'}! ✨`;
+    GameApp.renderMap();
+    Screens.show('map');
+  },
+
+  renderMap() {
+    const trail = document.getElementById('map-trail');
+    trail.innerHTML = '';
+
+    const worldColors = [
+      'linear-gradient(135deg, #A8EDBB, #5CDB6F)',
+      'linear-gradient(135deg, #9b5de5, #6a3aaa)',
+      'linear-gradient(135deg, #2d8a5a, #1a5e3a)',
+      'linear-gradient(135deg, #2e86de, #1a5a9a)',
+      'linear-gradient(135deg, #8c9eff, #5c6bff)',
+      'linear-gradient(135deg, #7b52ab, #3d1c6e)',
+      'linear-gradient(135deg, #8b2be2, #4a0a4a)'
+    ];
+
+    CONFIG.worlds.forEach((world, idx) => {
+      if (idx > 0) {
+        const conn = document.createElement('div');
+        conn.className = 'map-connector';
+        trail.appendChild(conn);
+      }
+
+      const island = document.createElement('div');
+      island.className = 'world-island' + (Storage.isUnlocked(world.id) ? '' : ' locked');
+      island.style.background = worldColors[idx];
+      island.setAttribute('aria-label', `World ${world.id}: ${world.name}`);
+      island.setAttribute('tabindex', '0');
+      island.setAttribute('role', 'button');
+
+      const stars = Storage.getStars(world.id);
+      const starStr = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+      const isCurrent = Storage.isUnlocked(world.id) && !Storage.isUnlocked(world.id + 1);
+
+      if (isCurrent) {
+        island.innerHTML = `
+          <div class="current-lumi">🦄</div>
+          <div class="world-num">${world.emoji}</div>
+          <div class="world-name-label">${world.name}</div>
+          <div class="world-stars">${starStr}</div>
+        `;
+      } else if (Storage.isUnlocked(world.id)) {
+        island.innerHTML = `
+          <div class="world-num">${world.emoji}</div>
+          <div class="world-name-label">${world.name}</div>
+          <div class="world-stars">${starStr}</div>
+        `;
+      } else {
+        island.innerHTML = `
+          <div class="lock-icon">🔒</div>
+          <div class="world-name-label" style="opacity:0.7;">${world.name}</div>
+        `;
+      }
+
+      if (Storage.isUnlocked(world.id)) {
+        island.onclick = () => GameApp.selectWorld(world.id);
+        island.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') GameApp.selectWorld(world.id); };
+      }
+      trail.appendChild(island);
+    });
+  },
+
+  selectWorld(worldId) {
+    Audio.click();
+    const world = CONFIG.worlds.find(w => w.id === worldId);
+    STATE.currentWorld = world;
+    STATE.currentStageIdx = 0;
+    GameApp.showIntro(world);
+  },
+
+  showIntro(world) {
+    document.getElementById('intro-world-emoji').textContent = world.emoji;
+    document.getElementById('intro-world-title').textContent = `World ${world.id}: ${world.name}`;
+    document.getElementById('intro-story').textContent = world.story;
+    document.getElementById('intro-tables').textContent = `Practicing: ×${world.tables.join(', ×')}`;
+    createSparkles('intro-sparks', 20);
+    Screens.show('intro');
+  },
+
+  startWorldGame() {
+    Audio.click();
+    STATE.totalWrong = 0;
+    STATE.hintsUsed = 0;
+    STATE.currentStageIdx = 0;
+    GameApp.startStage();
+  },
+
+  startStage() {
+    const world = STATE.currentWorld;
+    const stageIdx = STATE.currentStageIdx;
+    const stageTypes = world.stageTypes;
+
+    if (stageIdx >= stageTypes.length) {
+      GameApp.showResults();
+      return;
+    }
+
+    const stageType = stageTypes[stageIdx];
+    STATE.currentStageType = stageType;
+    STATE.stageQIdx = 0;
+    STATE.lives = 3;
+    STATE.hintLevel = 0;
+
+    // Generate questions for this stage
+    if (stageType === 'E') {
+      STATE.matchState = {
+        pairs: QGen.generateMatchSet(world.tables),
+        selectedLeft: null,
+        matchedCount: 0
+      };
+    } else if (stageType === 'D') {
+      STATE.speedState = {
+        questions: QGen.generateStage(world, 'A'),
+        qIdx: 0,
+        correct: 0,
+        timeLeft: 30,
+        interval: null
+      };
+    } else {
+      STATE.stageQuestions = QGen.generateStage(world, stageType);
+    }
+
+    GameApp.setupGameScreen();
+    GameApp.renderCurrentQuestion();
+  },
+
+  setupGameScreen() {
+    const world = STATE.currentWorld;
+    const bg = document.getElementById('game-bg');
+    bg.className = 'game-bg ' + world.color;
+
+    document.getElementById('game-world-label').textContent = `${world.emoji} ${world.name}`;
+    document.getElementById('game-stage-label').textContent = `Stage ${STATE.currentStageIdx + 1} of ${world.stageTypes.length}`;
+
+    GameApp.updateLives();
+    GameApp.updateProgress();
+
+    document.getElementById('faye-speech').textContent = CONFIG.fayeMessages[Math.floor(Math.random() * CONFIG.fayeMessages.length)];
+    document.getElementById('faye-speech').classList.add('visible');
+
+    Screens.show('game');
+    createSparkles('title-sparks', 0);
+  },
+
+  updateLives() {
+    for (let i = 1; i <= 3; i++) {
+      const h = document.getElementById(`heart-${i}`);
+      if (i <= STATE.lives) {
+        h.classList.remove('lost');
+      } else {
+        h.classList.add('lost');
+      }
+    }
+  },
+
+  updateProgress() {
+    const world = STATE.currentWorld;
+    const totalStages = world.stageTypes.length;
+    const pct = (STATE.currentStageIdx / totalStages) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+  },
+
+  renderCurrentQuestion() {
+    const type = STATE.currentStageType;
+    const main = document.getElementById('game-main');
+    const hintBox = document.getElementById('hint-box');
+    hintBox.classList.remove('visible');
+    hintBox.textContent = '';
+
+    // Stop any timer
+    if (STATE.timer) clearInterval(STATE.timer);
+
+    if (type === 'E') {
+      GameApp.renderMatchingGame();
+      return;
+    }
+    if (type === 'D') {
+      GameApp.renderSpeedRound();
+      return;
+    }
+    if (type === 'BOSS') {
+      GameApp.renderBossQuestion();
+      return;
+    }
+
+    const q = STATE.stageQuestions[STATE.stageQIdx];
+    STATE.currentQuestion = q;
+    STATE.hintLevel = 0;
+
+    let html = '';
+
+    // Lumi character
+    html += `<div class="lumi-container" id="lumi-anim">
+      <svg width="100" height="84" viewBox="0 0 180 150" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="90" cy="100" rx="55" ry="38" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <rect x="65" y="128" width="12" height="22" rx="6" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <rect x="82" y="130" width="12" height="20" rx="6" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <rect x="100" y="130" width="12" height="20" rx="6" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <rect x="116" y="128" width="12" height="22" rx="6" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <ellipse cx="75" cy="80" rx="22" ry="28" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <ellipse cx="68" cy="52" rx="28" ry="24" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+        <ellipse cx="50" cy="58" rx="14" ry="10" fill="#fff0f8" stroke="#e8e0f8" stroke-width="1.5"/>
+        <ellipse cx="45" cy="60" rx="3" ry="2" fill="#ffb3de"/>
+        <circle cx="62" cy="48" r="7" fill="#2d1b69"/>
+        <circle cx="64" cy="46" r="2.5" fill="white"/>
+        <polygon points="68,28 62,8 74,28" fill="url(#hg1)"/>
+        <polygon points="80,36 90,20 95,38" fill="white" stroke="#e8e0f8" stroke-width="1.5"/>
+        <polygon points="82,36 90,24 93,38" fill="#ffb3de"/>
+        <path d="M90,30 C105,20 120,30 118,50 C116,65 105,68 100,75" stroke="#FF6B6B" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M90,34 C109,24 124,34 122,54 C120,69 109,72 104,79" stroke="#A8EDBB" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M90,36 C111,26 126,36 124,56 C122,71 111,74 106,81" stroke="#C8AAFF" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M140,95 C165,80 170,100 165,115 C160,130 150,125 155,135" stroke="#FFE97A" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="54" cy="58" rx="6" ry="4" fill="#ffb3de" opacity="0.5"/>
+        <defs>
+          <linearGradient id="hg1" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#FFF8DC"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>`;
+
+    if (type === 'C') {
+      html += `<div class="question-type-label">🧚 Fill the Fairy Garden — find the missing number!</div>`;
+      html += `<div class="missing-factor-display">
+        <span>${q.missing === 'a' ? '' : q.a}</span>
+        ${q.missing === 'a' ? `<div class="question-mark">?</div>` : ''}
+        <span>×</span>
+        ${q.missing === 'b' ? `<div class="question-mark">?</div>` : ''}
+        <span>${q.missing === 'b' ? '' : q.b}</span>
+        <span>= ${q.ans}</span>
+      </div>`;
+    } else {
+      html += `<div class="question-type-label">${type === 'B' ? '🪄 Choose the Magic Spell!' : '🌟 Help Lumi!'}</div>`;
+      html += `<div class="question-display">${q.a} × ${q.b} = ?</div>`;
+    }
+
+    if (type === 'A' || type === 'C') {
+      // Number pad input
+      STATE.currentInput = '';
+      html += `<div class="answer-display" id="answer-display"><span id="answer-text"></span><span class="answer-cursor"></span></div>`;
+      html += `<div class="numpad" role="group" aria-label="Number pad">`;
+      for (let d = 1; d <= 9; d++) {
+        html += `<button class="numpad-btn" onclick="GameApp.numpadInput('${d}')" aria-label="${d}">${d}</button>`;
+      }
+      html += `<button class="numpad-btn btn-skip-q" onclick="GameApp.skipQuestion()" aria-label="Skip question">Skip</button>`;
+      html += `<button class="numpad-btn" onclick="GameApp.numpadInput('0')" aria-label="0">0</button>`;
+      html += `<button class="numpad-btn btn-backspace" onclick="GameApp.numpadInput('back')" aria-label="Backspace">⌫</button>`;
+      html += `</div>`;
+    } else if (type === 'B') {
+      // Multiple choice
+      html += `<div class="mc-grid" role="group" aria-label="Choose your answer">`;
+      q.choices.forEach(choice => {
+        html += `<button class="mc-btn" onclick="GameApp.submitMCAnswer(${choice})" aria-label="${choice}">${choice}</button>`;
+      });
+      html += `</div>`;
+    }
+
+    main.innerHTML = html;
+
+    // Start timer if needed
+    const world = STATE.currentWorld;
+    if (world.timer > 0 && type !== 'B') {
+      GameApp.startTimer(world.timer);
+    }
+  },
+
+  numpadInput(val) {
+    const type = STATE.currentStageType;
+    if (type === 'D') { GameApp.speedNumpadInput(val); return; }
+    if (type === 'B' || type === 'E' || type === 'BOSS') return;
+
+    if (val === 'back') {
+      STATE.currentInput = STATE.currentInput.slice(0, -1);
+    } else if (val === 'confirm') {
+      GameApp.submitAnswer();
+      return;
+    } else {
+      if (STATE.currentInput.length < 3) {
+        STATE.currentInput += val;
+        Audio.click();
+      }
+    }
+    const el = document.getElementById('answer-text');
+    if (el) el.textContent = STATE.currentInput;
+  },
+
+  submitAnswer() {
+    const q = STATE.currentQuestion;
+    if (!q) return;
+    const input = parseInt(STATE.currentInput);
+    if (isNaN(input)) { GameApp.showToast("Type a number first! 🔢"); return; }
+
+    const correctAns = STATE.currentStageType === 'C' ? q.answerVal : q.ans;
+    if (input === correctAns) {
+      GameApp.onCorrect();
+    } else {
+      GameApp.onWrong(q);
+    }
+  },
+
+  submitMCAnswer(val) {
+    const q = STATE.currentQuestion;
+    const buttons = document.querySelectorAll('.mc-btn');
+
+    if (val === q.ans) {
+      buttons.forEach(btn => { if (parseInt(btn.textContent) === val) btn.classList.add('correct'); });
+      GameApp.onCorrect();
+    } else {
+      buttons.forEach(btn => { if (parseInt(btn.textContent) === val) btn.classList.add('wrong'); });
+      GameApp.onWrong(q);
+    }
+  },
+
+  onCorrect() {
+    Audio.correct();
+    GameApp.showBurst();
+    const praise = CONFIG.praiseMessages[Math.floor(Math.random() * CONFIG.praiseMessages.length)];
+    GameApp.showFeedback(praise, true);
+
+    const lumi = document.getElementById('lumi-anim');
+    if (lumi) { lumi.classList.remove('wiggle', 'droop'); void lumi.offsetWidth; lumi.classList.add('wiggle'); }
+
+    if (STATE.timer) clearInterval(STATE.timer);
+
+    setTimeout(() => {
+      GameApp.nextQuestion();
+    }, 900);
+  },
+
+  onWrong(q) {
+    Audio.wrong();
+    STATE.totalWrong++;
+    STATE.hintLevel++;
+    STATE.lives = Math.max(0, STATE.lives - 1);
+    GameApp.updateLives();
+
+    const oops = CONFIG.oopsMessages[Math.floor(Math.random() * CONFIG.oopsMessages.length)];
+    GameApp.showFeedback(oops, false);
+
+    const lumi = document.getElementById('lumi-anim');
+    if (lumi) { lumi.classList.remove('wiggle', 'droop'); void lumi.offsetWidth; lumi.classList.add('droop'); setTimeout(() => lumi.classList.remove('droop'), 600); }
+
+    const adEl = document.getElementById('answer-display');
+    if (adEl) { adEl.classList.remove('flash-correct', 'flash-wrong'); void adEl.offsetWidth; adEl.classList.add('flash-wrong'); }
+
+    // Hints
+    const hintBox = document.getElementById('hint-box');
+    const correctAns = STATE.currentStageType === 'C' ? q.answerVal : q.ans;
+
+    if (STATE.hintLevel === 1) {
+      const faye = document.getElementById('faye-speech');
+      faye.textContent = `Try counting by ${q.a}s! 💡`;
+      faye.classList.add('visible');
+    } else if (STATE.hintLevel === 2) {
+      if (hintBox) {
+        hintBox.textContent = `Hint: ${q.a} + ${q.a} + ... (${q.b} times) = ?`;
+        hintBox.classList.add('visible');
+      }
+    } else if (STATE.hintLevel >= 3) {
+      if (hintBox) {
+        hintBox.textContent = `The answer is ${correctAns}! 🌟 Keep going!`;
+        hintBox.classList.add('visible');
+        STATE.hintsUsed++;
+      }
+      setTimeout(() => GameApp.nextQuestion(), 1800);
+      return;
+    }
+
+    // Reset input
+    STATE.currentInput = '';
+    const el = document.getElementById('answer-text');
+    if (el) el.textContent = '';
+  },
+
+  nextQuestion() {
+    const type = STATE.currentStageType;
+    if (type === 'BOSS') {
+      GameApp.nextBossQuestion();
+      return;
+    }
+
+    STATE.stageQIdx++;
+    const total = (type === 'D') ? 5 : STATE.stageQuestions.length;
+
+    if (STATE.stageQIdx >= total) {
+      GameApp.stageComplete();
+    } else {
+      STATE.hintLevel = 0;
+      GameApp.renderCurrentQuestion();
+    }
+  },
+
+  stageComplete() {
+    STATE.currentStageIdx++;
+    GameApp.updateProgress();
+
+    if (STATE.currentStageIdx >= STATE.currentWorld.stageTypes.length) {
+      GameApp.showResults();
+    } else {
+      GameApp.showToast(`Stage ${STATE.currentStageIdx} complete! ✨`);
+      setTimeout(() => GameApp.startStage(), 800);
+    }
+  },
+
+  skipQuestion() {
+    STATE.totalWrong++;
+    GameApp.nextQuestion();
+  },
+
+  // ===== TIMER =====
+  startTimer(seconds) {
+    STATE.timerMax = seconds;
+    STATE.timerLeft = seconds;
+    const bar = document.getElementById('timer-bar');
+    const fill = document.getElementById('timer-fill');
+    if (bar) bar.style.display = 'block';
+    if (fill) {
+      fill.style.width = '100%';
+      fill.classList.remove('urgent');
+    }
+
+    STATE.timer = setInterval(() => {
+      STATE.timerLeft -= 0.1;
+      const pct = (STATE.timerLeft / STATE.timerMax) * 100;
+      if (fill) {
+        fill.style.width = Math.max(0, pct) + '%';
+        if (pct < 30) fill.classList.add('urgent');
+      }
+
+      if (Math.floor(STATE.timerLeft) !== Math.floor(STATE.timerLeft + 0.1) && STATE.timerLeft < 5) {
+        Audio.tick();
+      }
+
+      if (STATE.timerLeft <= 0) {
+        clearInterval(STATE.timer);
+        GameApp.onWrong(STATE.currentQuestion || {a:0,b:0,ans:0,answerVal:0});
+      }
+    }, 100);
+  },
+
+  // ===== FEEDBACK =====
+  showFeedback(text, correct) {
+    const overlay = document.getElementById('feedback-overlay');
+    const ftxt = document.getElementById('feedback-text');
+    ftxt.textContent = text;
+    ftxt.className = 'feedback-text ' + (correct ? 'correct' : 'wrong');
+    overlay.classList.add('show');
+    setTimeout(() => overlay.classList.remove('show'), 1000);
+  },
+
+  showBurst() {
+    const container = document.getElementById('burst-container');
+    if (!container) return;
+    container.innerHTML = '';
+    const colors = ['#FFE97A', '#C8AAFF', '#FFB3DE', '#A8EDBB', '#5CDB6F'];
+    for (let i = 0; i < 16; i++) {
+      const p = document.createElement('div');
+      p.className = 'burst-particle';
+      const angle = (i / 16) * 360;
+      const dist = 60 + Math.random() * 60;
+      const dx = Math.cos(angle * Math.PI / 180) * dist;
+      const dy = Math.sin(angle * Math.PI / 180) * dist;
+      p.style.cssText = `
+        background:${colors[i % colors.length]};
+        --dx:${dx}px; --dy:${dy}px;
+        animation-delay:${Math.random() * 0.1}s;
+      `;
+      container.appendChild(p);
+    }
+    setTimeout(() => container.innerHTML = '', 1000);
+  },
+
+  showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  },
+
+  // ===== MATCHING GAME =====
+  renderMatchingGame() {
+    const ms = STATE.matchState;
+    const main = document.getElementById('game-main');
+    const pairs = ms.pairs;
+    const answers = [...pairs].sort(() => Math.random() - 0.5);
+
+    let html = `<div class="question-type-label">🌙 Match the Constellations — connect each equation to its answer!</div>`;
+    html += `<div class="match-wrapper" id="match-wrapper">`;
+    html += `<div class="match-col" id="match-left">`;
+    pairs.forEach((p, i) => {
+      html += `<div class="match-item" id="ml-${i}" data-idx="${i}" onclick="GameApp.matchLeft(${i})">${p.eq} = ?</div>`;
+    });
+    html += `</div>`;
+    html += `<div class="match-col" id="match-right">`;
+    answers.forEach((p, i) => {
+      const origIdx = pairs.indexOf(p);
+      html += `<div class="match-item" id="mr-${i}" data-orig="${origIdx}" onclick="GameApp.matchRight(${i})">${p.ans}</div>`;
+    });
+    html += `</div>`;
+    html += `</div>`;
+
+    main.innerHTML = html;
+    ms.selectedLeft = null;
+    ms.matchedCount = 0;
+    ms.answers = answers;
+  },
+
+  matchLeft(idx) {
+    Audio.click();
+    // Deselect previous
+    document.querySelectorAll('.match-item').forEach(el => {
+      if (!el.classList.contains('matched')) el.classList.remove('selected');
+    });
+    STATE.matchState.selectedLeft = idx;
+    document.getElementById(`ml-${idx}`).classList.add('selected');
+  },
+
+  matchRight(idx) {
+    const ms = STATE.matchState;
+    if (ms.selectedLeft === null) {
+      GameApp.showToast('Pick an equation first! 👈');
+      return;
+    }
+
+    const leftIdx = ms.selectedLeft;
+    const rightEl = document.getElementById(`mr-${idx}`);
+    const leftEl = document.getElementById(`ml-${leftIdx}`);
+    const origIdx = parseInt(rightEl.dataset.orig);
+
+    if (origIdx === leftIdx) {
+      // Correct match
+      Audio.correct();
+      leftEl.classList.add('matched');
+      rightEl.classList.add('matched');
+      leftEl.classList.remove('selected');
+      ms.matchedCount++;
+      GameApp.showBurst();
+
+      if (ms.matchedCount >= ms.pairs.length) {
+        setTimeout(() => {
+          GameApp.showFeedback('🌟 All matched!', true);
+          setTimeout(() => GameApp.stageComplete(), 1200);
+        }, 400);
+      }
+    } else {
+      Audio.wrong();
+      rightEl.classList.add('wrong-match');
+      leftEl.classList.remove('selected');
+      setTimeout(() => rightEl.classList.remove('wrong-match'), 400);
+      STATE.totalWrong++;
+    }
+    ms.selectedLeft = null;
+  },
+
+  // ===== SPEED ROUND =====
+  renderSpeedRound() {
+    const ss = STATE.speedState;
+    const main = document.getElementById('game-main');
+    ss.qIdx = 0;
+    ss.correct = 0;
+    ss.timeLeft = 30;
+    STATE.currentInput = '';
+
+    const q = ss.questions[0];
+
+    let html = `<div class="question-type-label">⚡ Stardust Sequence — answer 5 questions in 30 seconds!</div>`;
+    html += `<div class="speed-counter" id="speed-counter">Question 1 of 5</div>`;
+    html += `<div id="speed-big-timer" class="speed-big-timer">30</div>`;
+    html += `<div class="speed-question" id="speed-question">${q.a} × ${q.b} = ?</div>`;
+    html += `<div class="answer-display" id="answer-display"><span id="answer-text"></span><span class="answer-cursor"></span></div>`;
+    html += `<div class="numpad" role="group" aria-label="Number pad">`;
+    for (let d = 1; d <= 9; d++) {
+      html += `<button class="numpad-btn" onclick="GameApp.speedNumpadInput('${d}')" aria-label="${d}">${d}</button>`;
+    }
+    html += `<button class="numpad-btn btn-skip-q" onclick="GameApp.speedSkip()" aria-label="Skip">Skip</button>`;
+    html += `<button class="numpad-btn" onclick="GameApp.speedNumpadInput('0')" aria-label="0">0</button>`;
+    html += `<button class="numpad-btn btn-backspace" onclick="GameApp.speedNumpadInput('back')" aria-label="Backspace">⌫</button>`;
+    html += `</div>`;
+
+    main.innerHTML = html;
+    STATE.currentInput = '';
+
+    // Start countdown
+    ss.interval = setInterval(() => {
+      ss.timeLeft -= 0.1;
+      const timerEl = document.getElementById('speed-big-timer');
+      if (timerEl) {
+        const secs = Math.ceil(ss.timeLeft);
+        timerEl.textContent = secs;
+        if (secs <= 5) timerEl.classList.add('urgent');
+      }
+      if (ss.timeLeft <= 0) {
+        clearInterval(ss.interval);
+        GameApp.speedRoundEnd();
+      }
+    }, 100);
+  },
+
+  speedNumpadInput(val) {
+    const ss = STATE.speedState;
+    if (val === 'back') {
+      STATE.currentInput = STATE.currentInput.slice(0, -1);
+    } else {
+      if (STATE.currentInput.length < 3) {
+        STATE.currentInput += val;
+        Audio.click();
+
+        // Auto-submit for single-digit or when 3 chars
+        const q = ss.questions[ss.qIdx];
+        const input = parseInt(STATE.currentInput);
+        if (!isNaN(input) && (STATE.currentInput.length === String(q.ans).length || STATE.currentInput.length >= 3)) {
+          if (input === q.ans) {
+            GameApp.speedCorrect();
+            return;
+          }
+        }
+      }
+    }
+    const el = document.getElementById('answer-text');
+    if (el) el.textContent = STATE.currentInput;
+  },
+
+  speedCorrect() {
+    const ss = STATE.speedState;
+    Audio.correct();
+    GameApp.showBurst();
+    ss.correct++;
+    STATE.currentInput = '';
+    ss.qIdx++;
+
+    if (ss.qIdx >= ss.questions.length) {
+      clearInterval(ss.interval);
+      GameApp.speedRoundEnd();
+      return;
+    }
+
+    const q = ss.questions[ss.qIdx];
+    const qEl = document.getElementById('speed-question');
+    const counter = document.getElementById('speed-counter');
+    const atEl = document.getElementById('answer-text');
+    if (qEl) qEl.textContent = `${q.a} × ${q.b} = ?`;
+    if (counter) counter.textContent = `Question ${ss.qIdx + 1} of 5`;
+    if (atEl) atEl.textContent = '';
+  },
+
+  speedSkip() {
+    const ss = STATE.speedState;
+    STATE.totalWrong++;
+    STATE.currentInput = '';
+    ss.qIdx++;
+    if (ss.qIdx >= ss.questions.length) {
+      clearInterval(ss.interval);
+      GameApp.speedRoundEnd();
+      return;
+    }
+    const q = ss.questions[ss.qIdx];
+    const qEl = document.getElementById('speed-question');
+    const counter = document.getElementById('speed-counter');
+    const atEl = document.getElementById('answer-text');
+    if (qEl) qEl.textContent = `${q.a} × ${q.b} = ?`;
+    if (counter) counter.textContent = `Question ${ss.qIdx + 1} of 5`;
+    if (atEl) atEl.textContent = '';
+  },
+
+  speedRoundEnd() {
+    const ss = STATE.speedState;
+    clearInterval(ss.interval);
+    const main = document.getElementById('game-main');
+    const score = ss.correct;
+
+    main.innerHTML = `
+      <div style="text-align:center;padding:20px;">
+        <div style="font-size:64px;margin-bottom:16px;">${score >= 4 ? '🌟' : score >= 2 ? '⭐' : '💜'}</div>
+        <div style="font-family:'Fredoka One';font-size:36px;color:var(--deep);margin-bottom:8px;">
+          ${score} / 5 correct!
+        </div>
+        <div style="font-size:22px;color:#555;margin-bottom:24px;">
+          ${score === 5 ? "Perfect! You're a speed wizard! ⚡" : score >= 3 ? "Great job! Keep practicing! 🌟" : "Nice try! Lumi believes in you! 💜"}
+        </div>
+        <button class="btn-go" onclick="GameApp.stageComplete()">Continue →</button>
+      </div>`;
+    if (score >= 4) { Audio.levelUp(); GameApp.showBurst(); }
+  },
+
+  // ===== BOSS CHALLENGE =====
+  renderBossQuestion() {
+    const world = STATE.currentWorld;
+    const totalQ = world.id === 7 ? 12 : 8;
+
+    if (STATE.stageQIdx === 0) {
+      STATE.bossHealth = 3;
+      STATE.stageQuestions = QGen.generateStage(world, 'BOSS');
+      // Mix: some MC, some type-A
+      STATE.stageQuestions = STATE.stageQuestions.map(q => {
+        if (Math.random() < 0.5) {
+          q.choices = QGen.distractors(q.ans, 3);
+          q.choices.sort(() => Math.random() - 0.5);
+          q.isMC = true;
+        }
+        return q;
+      });
+    }
+
+    const q = STATE.stageQuestions[STATE.stageQIdx];
+    STATE.currentQuestion = q;
+    STATE.hintLevel = 0;
+    STATE.currentInput = '';
+
+    const main = document.getElementById('game-main');
+
+    // Dragon SVG
+    const dragonSize = world.id === 7 ? 120 : 80;
+    const dragonColor = world.id === 1 ? '#9b5de5' : world.id === 7 ? '#FFD700' : '#c8aaff';
+
+    let html = `
+      <div class="boss-area">
+        <svg width="${dragonSize}" height="${dragonSize}" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-label="Math Dragon">
+          <!-- Chubby cute dragon body -->
+          <ellipse cx="60" cy="75" rx="38" ry="32" fill="${dragonColor}"/>
+          <!-- Belly -->
+          <ellipse cx="60" cy="80" rx="24" ry="20" fill="rgba(255,255,255,0.4)"/>
+          <!-- Head -->
+          <circle cx="60" cy="42" r="28" fill="${dragonColor}"/>
+          <!-- Horns -->
+          <polygon points="46,20 42,8 52,18" fill="${dragonColor}"/>
+          <polygon points="74,20 78,8 68,18" fill="${dragonColor}"/>
+          <!-- Eyes -->
+          <circle cx="50" cy="38" r="8" fill="white"/>
+          <circle cx="70" cy="38" r="8" fill="white"/>
+          <circle cx="51" cy="38" r="5" fill="#2d1b69"/>
+          <circle cx="71" cy="38" r="5" fill="#2d1b69"/>
+          <circle cx="52" cy="36" r="2" fill="white"/>
+          <circle cx="72" cy="36" r="2" fill="white"/>
+          <!-- Smile -->
+          <path d="M48 52 Q60 62 72 52" stroke="#2d1b69" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <!-- Cheek blush -->
+          <ellipse cx="40" cy="47" rx="8" ry="5" fill="rgba(255,179,222,0.5)"/>
+          <ellipse cx="80" cy="47" rx="8" ry="5" fill="rgba(255,179,222,0.5)"/>
+          <!-- Nostrils -->
+          <circle cx="56" cy="48" r="2.5" fill="#2d1b69" opacity="0.3"/>
+          <circle cx="64" cy="48" r="2.5" fill="#2d1b69" opacity="0.3"/>
+          <!-- Wings -->
+          <path d="M22,60 C8,40 12,20 28,35 C20,50 22,60 22,60" fill="${dragonColor}" opacity="0.8"/>
+          <path d="M98,60 C112,40 108,20 92,35 C100,50 98,60 98,60" fill="${dragonColor}" opacity="0.8"/>
+          <!-- Tail -->
+          <path d="M90,90 C110,100 115,115 100,110 C95,108 90,100 90,90" fill="${dragonColor}"/>
+          <!-- Feet -->
+          <ellipse cx="44" cy="106" rx="12" ry="7" fill="${dragonColor}"/>
+          <ellipse cx="76" cy="106" rx="12" ry="7" fill="${dragonColor}"/>
+        </svg>
+        <div class="boss-health" id="boss-health">
+          <span class="boss-heart" id="bh-1">💚</span>
+          <span class="boss-heart" id="bh-2">💚</span>
+          <span class="boss-heart" id="bh-3">💚</span>
+        </div>
+      </div>`;
+
+    html += `<div class="question-type-label">⚔️ Boss Challenge! (${STATE.stageQIdx + 1}/${totalQ})</div>`;
+    html += `<div class="question-display">${q.a} × ${q.b} = ?</div>`;
+
+    if (q.isMC) {
+      html += `<div class="mc-grid" role="group" aria-label="Choose your answer">`;
+      q.choices.forEach(c => {
+        html += `<button class="mc-btn" onclick="GameApp.submitBossAnswer(${c})" aria-label="${c}">${c}</button>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<div class="answer-display" id="answer-display"><span id="answer-text"></span><span class="answer-cursor"></span></div>`;
+      html += `<div class="numpad" role="group" aria-label="Number pad">`;
+      for (let d = 1; d <= 9; d++) {
+        html += `<button class="numpad-btn" onclick="GameApp.numpadInput('${d}')" aria-label="${d}">${d}</button>`;
+      }
+      html += `<button class="numpad-btn btn-skip-q" onclick="GameApp.skipQuestion()" aria-label="Skip">Skip</button>`;
+      html += `<button class="numpad-btn" onclick="GameApp.numpadInput('0')" aria-label="0">0</button>`;
+      html += `<button class="numpad-btn btn-backspace" onclick="GameApp.numpadInput('back')" aria-label="Backspace">⌫</button>`;
+      html += `</div>`;
+    }
+
+    main.innerHTML = html;
+
+    // Boss timer
+    GameApp.startTimer(15);
+  },
+
+  submitBossAnswer(val) {
+    const q = STATE.currentQuestion;
+    const buttons = document.querySelectorAll('.mc-btn');
+
+    if (val === q.ans) {
+      buttons.forEach(btn => { if (parseInt(btn.textContent) === val) btn.classList.add('correct'); });
+      GameApp.onBossCorrect();
+    } else {
+      buttons.forEach(btn => { if (parseInt(btn.textContent) === val) btn.classList.add('wrong'); });
+      GameApp.onBossWrong(q);
+    }
+  },
+
+  onBossCorrect() {
+    Audio.correct();
+    GameApp.showBurst();
+    const praise = CONFIG.praiseMessages[Math.floor(Math.random() * CONFIG.praiseMessages.length)];
+    GameApp.showFeedback(praise, true);
+    if (STATE.timer) clearInterval(STATE.timer);
+    setTimeout(() => GameApp.nextBossQuestion(), 900);
+  },
+
+  onBossWrong(q) {
+    Audio.wrong();
+    STATE.totalWrong++;
+    STATE.bossHealth--;
+    GameApp.updateBossHealth();
+    GameApp.showFeedback(CONFIG.oopsMessages[Math.floor(Math.random() * CONFIG.oopsMessages.length)], false);
+
+    // Reset input
+    STATE.currentInput = '';
+    const el = document.getElementById('answer-text');
+    if (el) el.textContent = '';
+
+    if (STATE.bossHealth <= 0) {
+      if (STATE.timer) clearInterval(STATE.timer);
+      setTimeout(() => GameApp.bossRetry(), 1000);
+    }
+  },
+
+  updateBossHealth() {
+    for (let i = 1; i <= 3; i++) {
+      const el = document.getElementById(`bh-${i}`);
+      if (el) {
+        if (i > STATE.bossHealth) el.classList.add('lost');
+        else el.classList.remove('lost');
+      }
+    }
+  },
+
+  bossRetry() {
+    const main = document.getElementById('game-main');
+    main.innerHTML = `
+      <div style="text-align:center;padding:20px;">
+        <div style="font-size:56px;margin-bottom:16px;">💜</div>
+        <div style="font-family:'Fredoka One';font-size:32px;color:var(--deep);margin-bottom:12px;">So close!</div>
+        <div style="font-size:22px;color:#555;margin-bottom:24px;">The dragon is still there! Give it another try — you can do it! 🦄</div>
+        <button class="btn-go" onclick="GameApp.retryBoss()">Try Again! 💪</button>
+      </div>`;
+  },
+
+  retryBoss() {
+    STATE.stageQIdx = 0;
+    STATE.bossHealth = 3;
+    STATE.stageQuestions = QGen.generateStage(STATE.currentWorld, 'BOSS');
+    STATE.stageQuestions = STATE.stageQuestions.map(q => {
+      if (Math.random() < 0.5) {
+        q.choices = QGen.distractors(q.ans, 3);
+        q.choices.sort(() => Math.random() - 0.5);
+        q.isMC = true;
+      }
+      return q;
+    });
+    GameApp.renderBossQuestion();
+  },
+
+  nextBossQuestion() {
+    const world = STATE.currentWorld;
+    const totalQ = world.id === 7 ? 12 : 8;
+    STATE.stageQIdx++;
+
+    if (STATE.stageQIdx >= totalQ) {
+      // Boss defeated!
+      Audio.levelUp();
+      GameApp.showBurst();
+      GameApp.showFeedback('🐉 Dragon defeated! 🌟', true);
+      if (STATE.timer) clearInterval(STATE.timer);
+      setTimeout(() => GameApp.stageComplete(), 1500);
+    } else {
+      GameApp.renderBossQuestion();
+    }
+  },
+
+  // ===== RESULTS =====
+  showResults() {
+    const world = STATE.currentWorld;
+    const wrong = STATE.totalWrong;
+    const hints = STATE.hintsUsed;
+
+    let stars = 3;
+    if (wrong > 0 || hints > 0) stars = 2;
+    if (wrong > 3 || hints > 2) stars = 1;
+
+    Storage.setResult(world.id, stars);
+
+    const starStr = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+    document.getElementById('results-title').textContent = world.id === 7 ? '🏆 You are a Multiplication Master!' : `✨ ${world.name} Complete!`;
+    document.getElementById('results-stars').textContent = starStr;
+    document.getElementById('results-stats').innerHTML = `
+      Questions answered: <span>${STATE.currentStageIdx > 0 ? 'all' : '5'}</span><br>
+      Wrong answers: <span>${wrong}</span><br>
+      Hints used: <span>${hints}</span><br>
+      ${stars === 3 ? '✨ Perfect run! You are magical!' : stars === 2 ? '🌟 Great job, keep practicing!' : '💜 You completed it! Keep going!'}
+    `;
+
+    const nextBtn = document.getElementById('results-next-btn');
+    if (world.id === 7) {
+      nextBtn.textContent = '🏆 View Certificate';
+      nextBtn.onclick = () => GameApp.showCertificate();
+    } else if (Storage.isUnlocked(world.id + 1)) {
+      nextBtn.textContent = 'Next World →';
+      nextBtn.onclick = () => GameApp.goToNextWorld();
+      nextBtn.style.display = '';
+    } else {
+      nextBtn.style.display = 'none';
+    }
+
+    createSparkles('results-sparks', 30);
+    if (stars >= 2) Audio.levelUp();
+    Screens.show('results');
+  },
+
+  goToNextWorld() {
+    Audio.click();
+    const nextId = STATE.currentWorld.id + 1;
+    const nextWorld = CONFIG.worlds.find(w => w.id === nextId);
+    if (nextWorld && Storage.isUnlocked(nextId)) {
+      STATE.currentWorld = nextWorld;
+      GameApp.showIntro(nextWorld);
+    } else {
+      GameApp.showMap();
+    }
+  },
+
+  // ===== PROGRESS =====
+  showProgress() {
+    Audio.click();
+    document.getElementById('progress-player').textContent = STATE.playerName ? `${STATE.playerName}'s journey ✨` : 'Your magical journey ✨';
+    const grid = document.getElementById('progress-grid');
+    grid.innerHTML = '';
+
+    CONFIG.worlds.forEach(w => {
+      const stars = Storage.getStars(w.id);
+      const unlocked = Storage.isUnlocked(w.id);
+      const card = document.createElement('div');
+      card.className = 'progress-card';
+      card.innerHTML = `
+        <div style="font-size:32px;margin-bottom:8px;">${w.emoji}</div>
+        <div class="p-world-name">${w.name}</div>
+        <div class="p-stars">${unlocked ? '⭐'.repeat(stars) + '☆'.repeat(3-stars) : '🔒'}</div>
+        <div class="p-tables">${unlocked ? `Tables: ×${w.tables.join(', ×')}` : 'Locked'}</div>
+      `;
+      grid.appendChild(card);
+    });
+
+    createSparkles('progress-sparks', 25);
+    Screens.show('progress');
+  },
+
+  // ===== CERTIFICATE =====
+  showCertificate() {
+    document.getElementById('cert-name').textContent = STATE.playerName || 'Young Wizard';
+    Screens.show('certificate');
+  }
+};
+
+// ===========================
+// INIT
+// ===========================
+GameApp.init();
+</script>
+</body>
+</html>
