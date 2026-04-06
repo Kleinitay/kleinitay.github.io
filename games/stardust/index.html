@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stardust Multiplication Quest</title>
+<title>מסע כפל הכוכבים</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -25,6 +25,8 @@
     font-size: 18px;
     background: var(--deep);
     overflow: hidden;
+    direction: rtl;
+    text-align: right;
     height: 100vh;
     width: 100vw;
     display: flex;
@@ -1025,6 +1027,20 @@
     .mc-btn { height: 70px; font-size: 26px; }
     .game-main { gap: 8px; }
   }
+
+  .question-context {
+    font-family: 'Nunito', sans-serif;
+    font-size: 20px;
+    color: #2d1b69;
+    background: rgba(255,255,255,0.75);
+    border-radius: 16px;
+    padding: 10px 18px;
+    margin: 0 auto 10px;
+    max-width: 480px;
+    text-align: center;
+    font-style: italic;
+    border: 2px solid rgba(200,170,255,0.4);
+  }
 </style>
 </head>
 <body>
@@ -1092,12 +1108,12 @@
       </svg>
     </div>
 
-    <div class="title-text">Stardust Multiplication Quest</div>
-    <div class="title-sub">Join Lumi &amp; Faye on a magical math adventure! ✨</div>
+    <div class="title-text">מסע כפל הכוכבים</div>
+    <div class="title-sub">הצטרפו ללומי ופיה במסע מתמטי קסום! ✨</div>
 
     <div class="title-btns">
-      <button class="btn-primary" onclick="GameApp.startGame()" aria-label="Play the game">🌟 Let's Play!</button>
-      <button class="btn-secondary" onclick="GameApp.showProgress()" aria-label="View my stars">💜 My Stars</button>
+      <button class="btn-primary" onclick="GameApp.startGame()" aria-label="שחקו במשחק">🌟 בואו נשחק!</button>
+      <button class="btn-secondary" onclick="GameApp.showProgress()" aria-label="הכוכבים שלי">💜 הכוכבים שלי</button>
     </div>
   </div>
 </div>
@@ -1105,10 +1121,10 @@
 <!-- ===== WORLD MAP ===== -->
 <div id="screen-map" class="screen">
   <div class="sparkle-bg" id="map-sparks"></div>
-  <button class="btn-secondary map-back-btn" onclick="GameApp.showTitle()" aria-label="Go back to title" style="position:absolute;top:16px;left:16px;font-size:16px;padding:8px 20px;min-height:48px;z-index:10;">← Back</button>
+  <button class="btn-secondary map-back-btn" onclick="GameApp.showTitle()" aria-label="חזרה לדף הראשי" style="position:absolute;top:16px;left:16px;font-size:16px;padding:8px 20px;min-height:48px;z-index:10;">← חזרה</button>
   <div class="map-header">
-    <h1>🗺️ Magical World Map</h1>
-    <p id="map-player-name">Welcome, young wizard!</p>
+    <h1>🗺️ מפת העולמות הקסומה</h1>
+    <p id="map-player-name">ברוך הבא, קוסם צעיר!</p>
   </div>
   <div class="map-scroll">
     <div class="map-trail" id="map-trail"></div>
@@ -1120,12 +1136,12 @@
   <div class="sparkle-bg" id="intro-sparks"></div>
   <div class="intro-panel" style="z-index:2;">
     <div id="intro-world-emoji" style="font-size:56px;margin-bottom:8px;"></div>
-    <div class="intro-world-title" id="intro-world-title">World 1: Clover Meadow</div>
-    <div class="intro-story" id="intro-story">Story text here...</div>
-    <div class="intro-tables" id="intro-tables">Practicing: ×1 and ×2</div>
+    <div class="intro-world-title" id="intro-world-title">עולם 1: אחו התלתן</div>
+    <div class="intro-story" id="intro-story">...</div>
+    <div class="intro-tables" id="intro-tables">מתרגלים: ×1 ו-×2</div>
     <div class="intro-btns">
-      <button class="btn-go" onclick="GameApp.startWorldGame()" aria-label="Start playing">🚀 Let's Go!</button>
-      <button class="btn-skip" onclick="GameApp.startWorldGame()" aria-label="Skip intro">Skip Intro</button>
+      <button class="btn-go" onclick="GameApp.startWorldGame()" aria-label="התחל לשחק">🚀 יאללה!</button>
+      <button class="btn-skip" onclick="GameApp.startWorldGame()" aria-label="דלג על הפתיח">דלג על הפתיח</button>
     </div>
   </div>
 </div>
@@ -1142,8 +1158,8 @@
       <span class="heart" id="heart-3" aria-label="life 3">💜</span>
     </div>
     <div>
-      <div class="world-label" id="game-world-label">Clover Meadow</div>
-      <div class="stage-label" id="game-stage-label">Stage 1 of 5</div>
+      <div class="world-label" id="game-world-label">אחו התלתן</div>
+      <div class="stage-label" id="game-stage-label">שלב 1 מתוך 5</div>
     </div>
     <div style="width:80px;text-align:right;">
       <button onclick="GameApp.showMap()" style="background:none;border:none;font-size:24px;cursor:pointer;opacity:0.6;" aria-label="Return to map">🗺️</button>
@@ -1261,12 +1277,12 @@
         </defs>
       </svg>
     </div>
-    <div class="results-title" id="results-title">World Complete!</div>
+    <div class="results-title" id="results-title">השלמת את העולם!</div>
     <div class="results-stars" id="results-stars">⭐⭐⭐</div>
     <div class="results-stats" id="results-stats"></div>
     <div class="results-btns">
-      <button class="btn-go" id="results-next-btn" onclick="GameApp.goToNextWorld()" aria-label="Continue to next world">Next World →</button>
-      <button class="btn-secondary" onclick="GameApp.showMap()" aria-label="Return to map">🗺️ World Map</button>
+      <button class="btn-go" id="results-next-btn" onclick="GameApp.goToNextWorld()" aria-label="המשך לעולם הבא">← העולם הבא</button>
+      <button class="btn-secondary" onclick="GameApp.showMap()" aria-label="חזרה למפה">🗺️ מפת העולמות</button>
     </div>
   </div>
 </div>
@@ -1275,12 +1291,12 @@
 <div id="screen-progress" class="screen">
   <div class="sparkle-bg" id="progress-sparks"></div>
   <div class="progress-header">
-    <h1>✨ My Magic Stars</h1>
+    <h1>✨ הכוכבים הקסומים שלי</h1>
     <p id="progress-player"></p>
   </div>
   <div class="progress-grid" id="progress-grid"></div>
   <div class="progress-back">
-    <button class="btn-secondary" onclick="GameApp.showTitle()" aria-label="Back to title">← Back to Title</button>
+    <button class="btn-secondary" onclick="GameApp.showTitle()" aria-label="חזרה לדף הראשי">← חזרה לדף הראשי</button>
   </div>
 </div>
 
@@ -1288,15 +1304,15 @@
 <div id="screen-certificate" class="screen">
   <div class="certificate">
     <div style="font-size:48px;margin-bottom:8px;">🦄✨🌟</div>
-    <div class="cert-title">Certificate of Achievement</div>
-    <div class="cert-sub">This certifies that</div>
-    <div class="cert-name" id="cert-name">Young Wizard</div>
-    <div class="cert-sub">has mastered all multiplication tables!</div>
-    <div class="cert-tables">Tables ×1 through ×12 — all conquered with magic and courage! 🎉</div>
+    <div class="cert-title">תעודת הישג</div>
+    <div class="cert-sub">בזאת מוסמך/ת</div>
+    <div class="cert-name" id="cert-name">קוסם צעיר</div>
+    <div class="cert-sub">שלט בכל לוחות הכפל!</div>
+    <div class="cert-tables">לוחות ×1 עד ×12 — כולם נכבשו עם קסם ואומץ! 🎉</div>
     <div class="cert-stars">⭐⭐⭐⭐⭐⭐⭐</div>
     <div class="cert-btns">
-      <button class="btn-primary" onclick="window.print()" aria-label="Print certificate">🖨️ Print!</button>
-      <button class="btn-secondary" onclick="GameApp.showTitle()" aria-label="Back to title">🏠 Home</button>
+      <button class="btn-primary" onclick="window.print()" aria-label="הדפס תעודה">🖨️ הדפס!</button>
+      <button class="btn-secondary" onclick="GameApp.showTitle()" aria-label="חזרה לבית">🏠 בית</button>
     </div>
   </div>
 </div>
@@ -1304,10 +1320,10 @@
 <!-- ===== NAME OVERLAY ===== -->
 <div class="name-overlay" id="name-overlay" style="display:none;">
   <div class="name-box">
-    <h2>✨ Welcome!</h2>
-    <p>What's your magical name?</p>
-    <input type="text" class="name-input" id="name-input" placeholder="Enter your name" maxlength="20" aria-label="Enter your name">
-    <button class="btn-primary" onclick="GameApp.saveName()" style="width:100%;" aria-label="Start adventure">🦄 Start My Adventure!</button>
+    <h2>✨ ברוך הבא!</h2>
+    <p>מה שמך הקסום?</p>
+    <input type="text" class="name-input" id="name-input" placeholder="הכנס את שמך" maxlength="20" aria-label="הכנס את שמך">
+    <button class="btn-primary" onclick="GameApp.saveName()" style="width:100%;" aria-label="התחל הרפתקה">🦄 התחל את ההרפתקה שלי!</button>
   </div>
 </div>
 
@@ -1321,77 +1337,93 @@
 const CONFIG = {
   worlds: [
     {
-      id: 1, name: "Clover Meadow", emoji: "🌿",
+      id: 1, name: "אחו התלתן", emoji: "🌿",
       tables: [1, 2], setting: "Sunny green hills",
       color: "world-theme-1", textColor: "#1a4a2a",
-      story: "Lumi the Unicorn loves counting clovers! The meadow fairies need groups of flowers sorted. Help Lumi count them in twos! 🌸",
+      story: "לומי החד-קרן אוהבת לספור תלתנים! הפיות באחו צריכות לסדר קבוצות של פרחים. עזרו ללומי לספור בזוגות! 🌸",
       stageTypes: ['B', 'B', 'B', 'B', 'BOSS'],
       timer: 0, choices: 3
     },
     {
-      id: 2, name: "Crystal Caves", emoji: "💎",
+      id: 2, name: "מערות הקריסטל", emoji: "💎",
       tables: [1, 2, 3, 4], setting: "Glowing gem tunnels",
       color: "world-theme-2", textColor: "#ffffff",
-      story: "Deep in the Crystal Caves, magical gems glow with multiplication power! Help Lumi and Faye count the glittering crystals. 💜",
+      story: "עמוק במערות הקריסטל, אבנים קסומות זוהרות בכוח הכפל! עזרו ללומי ולפיה לספור את הגבישים המבריקים. 💜",
       stageTypes: ['A', 'B', 'A', 'B', 'BOSS'],
       timer: 0, choices: 4
     },
     {
-      id: 3, name: "Fairy Forest", emoji: "🍄",
+      id: 3, name: "יער הפיות", emoji: "🍄",
       tables: [1, 2, 3, 4, 5, 6], setting: "Enchanted mushroom woods",
       color: "world-theme-3", textColor: "#ffffff",
-      story: "The Fairy Forest is full of magical mushrooms! Each has a mystery number. Use your ×5 and ×6 powers to unlock the path! 🌿",
+      story: "יער הפיות מלא בפטריות קסומות! לכל אחת יש מספר מסתורי. השתמשו בכוחות ×5 ו-×6 שלכם כדי לפתוח את הדרך! 🌿",
       stageTypes: ['A', 'B', 'C', 'E', 'BOSS'],
       timer: 20, choices: 4
     },
     {
-      id: 4, name: "Rainbow River", emoji: "🌈",
+      id: 4, name: "נהר הקשת", emoji: "🌈",
       tables: [1, 2, 3, 4, 5, 6, 7, 8], setting: "Floating islands",
       color: "world-theme-4", textColor: "#ffffff",
-      story: "The rainbow bridge is broken! Each piece has a secret number. Lumi needs your ×7 and ×8 powers to rebuild it! 🌈",
+      story: "גשר הקשת שבור! לכל חלק יש מספר סודי. לומי צריכה את כוחות ×7 ו-×8 שלכם כדי לבנות אותו מחדש! 🌈",
       stageTypes: ['A', 'C', 'D', 'E', 'BOSS'],
       timer: 15, choices: 4
     },
     {
-      id: 5, name: "Cloud Kingdom", emoji: "☁️",
+      id: 5, name: "ממלכת העננים", emoji: "☁️",
       tables: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], setting: "Sky castles",
       color: "world-theme-5", textColor: "#2d1b69",
-      story: "High above the clouds, the Cloud Kingdom floats in the sky! Master ×9 and ×10 to open the castle gates. ✨",
+      story: "גבוה מעל העננים, ממלכת העננים מרחפת בשמים! שלטו ב-×9 ו-×10 כדי לפתוח שערי הטירה. ✨",
       stageTypes: ['A', 'C', 'D', 'E', 'BOSS'],
       timer: 12, choices: 4
     },
     {
-      id: 6, name: "Stardust Peak", emoji: "🌟",
+      id: 6, name: "פסגת אבק הכוכבים", emoji: "🌟",
       tables: [1,2,3,4,5,6,7,8,9,10,11,12], setting: "Space mountain",
       color: "world-theme-6", textColor: "#ffffff",
-      story: "At the very top of Stardust Peak, ×11 and ×12 hold the secrets of the universe! Lumi and Faye are counting on you! 🌟",
+      story: "בראש פסגת אבק הכוכבים, ×11 ו-×12 שומרים על סודות היקום! לומי ופיה סומכות עליכם! 🌟",
       stageTypes: ['A', 'C', 'D', 'E', 'BOSS'],
       timer: 12, choices: 4
     },
     {
-      id: 7, name: "The Grand Quest", emoji: "🏆",
+      id: 7, name: "המסע הגדול", emoji: "🏆",
       tables: [1,2,3,4,5,6,7,8,9,10,11,12], setting: "All worlds",
       color: "world-theme-7", textColor: "#ffffff",
-      story: "The ancient Stardust Dragon has scattered math stars across ALL the worlds! Only a true Multiplication Master can gather them back! 🐉",
+      story: "דרקון אבק הכוכבים הפזיל כוכבי מתמטיקה על כל העולמות! רק אמן כפל אמיתי יכול לאסוף אותם בחזרה! 🐉",
       stageTypes: ['A', 'D', 'C', 'E', 'BOSS'],
       timer: 10, choices: 4
     }
   ],
   praiseMessages: [
-    "✨ Magical!", "🌟 Stardust Smart!", "🦄 Lumi is dancing!", "💜 You're a wizard!",
-    "🎉 Wow, so fast!", "⭐ Brilliant!", "🌈 Rainbow brilliant!", "💫 Dazzling!"
+    "✨ קסום!", "🌟 חכם כמו כוכב!", "🦄 לומי רוקדת!", "💜 אתה קוסם!",
+    "🎉 וואו, כל כך מהיר!", "⭐ מבריק!", "🌈 נפלא!", "💫 מדהים!"
   ],
   oopsMessages: [
-    "Oops! Let's try again 💜", "So close! Give it another go ✨", "Almost there! Try once more 🌟",
-    "Hmm, not quite! You've got this 💪", "Nearly! One more try 🦄"
+    "אופס! בואו ננסה שוב 💜", "כמעט! נסו עוד פעם ✨", "כמעט הגעתם! עוד ניסיון 🌟",
+    "לא בדיוק! אתם יכולים 💪", "כמעט! עוד ניסיון אחד 🦄"
   ],
   fayeMessages: [
-    "You can do it! 🧚", "Think carefully! ✨", "Lumi believes in you! 🦄", "Magic powers, activate! 💜",
-    "So close to the stars! 🌟"
+    "אתם יכולים! 🧚", "תחשבו בקפידה! ✨", "לומי מאמינה בכם! 🦄", "כוחות הקסם, התעוררו! 💜",
+    "כל כך קרוב לכוכבים! 🌟"
   ],
   hintMessages: [
-    ["Try counting by groups! 🌸", "Picture {a} groups of {b} flowers!", "The answer is {ans}! 🎉"],
-    ["Remember: multiplication is repeated addition! ✨", "Try adding {a} together {b} times!", "The answer is {ans}! You've got this! 💜"]
+    ["נסו לספור בקבוצות! 🌸", "דמיינו {a} קבוצות של {b} פרחים!", "התשובה היא {ans}! 🎉"],
+    ["זכרו: כפל הוא חיבור חוזר! ✨", "נסו לחבר {a} פעמים {b}!", "התשובה היא {ans}! אתם מדהימים! 💜"]
+  ],
+  questionContexts: [
+    // World 1
+    ["לומי צריכה לספור פרחים בשביל לחצות את הגשר!", "הפיות מחכות לתשובה כדי לפתוח את השער!", "קבוצות הפרחים מסתדרות — רק עם הכפל הנכון!"],
+    // World 2
+    ["גביש הקריסטל נעול — רק התשובה הנכונה תפתח אותו!", "הפיות במערה צריכות לסדר את האבנים לפי הכפל!", "הנתיב חסום! לומי צריכה את המספר הנכון!"],
+    // World 3
+    ["הפטרייה הקסומה תיפתח רק עם התשובה!", "לומי תקועה בין העצים — עזרו לה!", "הפרח הקסום מחכה לתשובת הכפל הנכונה!"],
+    // World 4
+    ["חתיכת הגשר תחזור למקומה רק עם המספר הנכון!", "לומי מנסה לקפוץ לאי הבא — היא צריכה את עזרתכם!", "הקשת תאיר שוב רק כשתמצאו את התשובה!"],
+    // World 5
+    ["שער הטירה נעול — התשובה הנכונה תפתח אותו!", "לומי מרחפת בין העננים וצריכה את עזרתכם!", "הענן הקסום ייעלם רק כשתפתרו את החידה!"],
+    // World 6
+    ["כוכב הנופל מחכה לתשובת הכפל!", "סוד היקום מוצפן בתשובה הנכונה!", "לומי מטפסת לפסגה — עזרו לה עם הכפל!"],
+    // World 7
+    ["כוכב מתמטיקה מחכה להינצל — פתרו את החידה!", "הדרקון הגדול שומר את הכוכב — רק הכפל הנכון ינצח!", "לומי קרובה לנצחון — שאלה אחת עוד!"]
   ]
 };
 
@@ -1639,7 +1671,7 @@ const GameApp = {
 
   saveName() {
     const input = document.getElementById('name-input');
-    const name = input.value.trim() || 'Young Wizard';
+    const name = input.value.trim() || 'קוסם צעיר';
     STATE.playerName = name;
     Storage.save();
     document.getElementById('name-overlay').style.display = 'none';
@@ -1672,7 +1704,7 @@ const GameApp = {
     Audio.click();
     createSparkles('map-sparks', 25);
     const nameEl = document.getElementById('map-player-name');
-    nameEl.textContent = `Welcome, ${STATE.playerName || 'Young Wizard'}! ✨`;
+    nameEl.textContent = `ברוך הבא, ${STATE.playerName || 'קוסם צעיר'}! ✨`;
     GameApp.renderMap();
     Screens.show('map');
   },
@@ -1747,9 +1779,9 @@ const GameApp = {
 
   showIntro(world) {
     document.getElementById('intro-world-emoji').textContent = world.emoji;
-    document.getElementById('intro-world-title').textContent = `World ${world.id}: ${world.name}`;
+    document.getElementById('intro-world-title').textContent = `עולם ${world.id}: ${world.name}`;
     document.getElementById('intro-story').textContent = world.story;
-    document.getElementById('intro-tables').textContent = `Practicing: ×${world.tables.join(', ×')}`;
+    document.getElementById('intro-tables').textContent = `מתרגלים: ×${world.tables.join(', ×')}`;
     createSparkles('intro-sparks', 20);
     Screens.show('intro');
   },
@@ -1807,7 +1839,7 @@ const GameApp = {
     bg.className = 'game-bg ' + world.color;
 
     document.getElementById('game-world-label').textContent = `${world.emoji} ${world.name}`;
-    document.getElementById('game-stage-label').textContent = `Stage ${STATE.currentStageIdx + 1} of ${world.stageTypes.length}`;
+    document.getElementById('game-stage-label').textContent = `שלב ${STATE.currentStageIdx + 1} מתוך ${world.stageTypes.length}`;
 
     GameApp.updateLives();
     GameApp.updateProgress();
@@ -1896,8 +1928,13 @@ const GameApp = {
       </svg>
     </div>`;
 
+    const worldIdx = (STATE.currentWorld.id - 1);
+    const contexts = CONFIG.questionContexts[worldIdx];
+    const ctx = contexts[Math.floor(Math.random() * contexts.length)];
+    html += `<div class="question-context">${ctx}</div>`;
+
     if (type === 'C') {
-      html += `<div class="question-type-label">🧚 Fill the Fairy Garden — find the missing number!</div>`;
+      html += `<div class="question-type-label">🧚 מלאו את גן הפיות — מצאו את המספר החסר!</div>`;
       html += `<div class="missing-factor-display">
         <span>${q.missing === 'a' ? '' : q.a}</span>
         ${q.missing === 'a' ? `<div class="question-mark">?</div>` : ''}
@@ -1907,7 +1944,7 @@ const GameApp = {
         <span>= ${q.ans}</span>
       </div>`;
     } else {
-      html += `<div class="question-type-label">${type === 'B' ? '🪄 Choose the Magic Spell!' : '🌟 Help Lumi!'}</div>`;
+      html += `<div class="question-type-label">${type === 'B' ? '🪄 בחרו את לחש הקסם!' : '🌟 עזרו ללומי!'}</div>`;
       html += `<div class="question-display">${q.a} × ${q.b} = ?</div>`;
     }
 
@@ -1919,9 +1956,10 @@ const GameApp = {
       for (let d = 1; d <= 9; d++) {
         html += `<button class="numpad-btn" onclick="GameApp.numpadInput('${d}')" aria-label="${d}">${d}</button>`;
       }
-      html += `<button class="numpad-btn btn-skip-q" onclick="GameApp.skipQuestion()" aria-label="Skip question">Skip</button>`;
+      html += `<button class="numpad-btn btn-skip-q" onclick="GameApp.skipQuestion()" aria-label="דלג על שאלה">דלג</button>`;
       html += `<button class="numpad-btn" onclick="GameApp.numpadInput('0')" aria-label="0">0</button>`;
-      html += `<button class="numpad-btn btn-backspace" onclick="GameApp.numpadInput('back')" aria-label="Backspace">⌫</button>`;
+      html += `<button class="numpad-btn btn-backspace" onclick="GameApp.numpadInput('back')" aria-label="מחק">⌫</button>`;
+      html += `<button class="numpad-btn btn-confirm" onclick="GameApp.numpadInput('confirm')" aria-label="אשר תשובה">✓</button>`;
       html += `</div>`;
     } else if (type === 'B') {
       // Multiple choice
@@ -1965,7 +2003,7 @@ const GameApp = {
     const q = STATE.currentQuestion;
     if (!q) return;
     const input = parseInt(STATE.currentInput);
-    if (isNaN(input)) { GameApp.showToast("Type a number first! 🔢"); return; }
+    if (isNaN(input)) { GameApp.showToast("הכנס מספר קודם! 🔢"); return; }
 
     const correctAns = STATE.currentStageType === 'C' ? q.answerVal : q.ans;
     if (input === correctAns) {
@@ -2026,16 +2064,16 @@ const GameApp = {
 
     if (STATE.hintLevel === 1) {
       const faye = document.getElementById('faye-speech');
-      faye.textContent = `Try counting by ${q.a}s! 💡`;
+      faye.textContent = `נסו לספור ב-${q.a}! 💡`;
       faye.classList.add('visible');
     } else if (STATE.hintLevel === 2) {
       if (hintBox) {
-        hintBox.textContent = `Hint: ${q.a} + ${q.a} + ... (${q.b} times) = ?`;
+        hintBox.textContent = `רמז: ${q.a} + ${q.a} + ... (${q.b} פעמים) = ?`;
         hintBox.classList.add('visible');
       }
     } else if (STATE.hintLevel >= 3) {
       if (hintBox) {
-        hintBox.textContent = `The answer is ${correctAns}! 🌟 Keep going!`;
+        hintBox.textContent = `התשובה היא ${correctAns}! 🌟 המשיכו!`;
         hintBox.classList.add('visible');
         STATE.hintsUsed++;
       }
@@ -2074,7 +2112,7 @@ const GameApp = {
     if (STATE.currentStageIdx >= STATE.currentWorld.stageTypes.length) {
       GameApp.showResults();
     } else {
-      GameApp.showToast(`Stage ${STATE.currentStageIdx} complete! ✨`);
+      GameApp.showToast(`שלב ${STATE.currentStageIdx} הושלם! ✨`);
       setTimeout(() => GameApp.startStage(), 800);
     }
   },
@@ -2161,7 +2199,7 @@ const GameApp = {
     const pairs = ms.pairs;
     const answers = [...pairs].sort(() => Math.random() - 0.5);
 
-    let html = `<div class="question-type-label">🌙 Match the Constellations — connect each equation to its answer!</div>`;
+    let html = `<div class="question-type-label">🌙 התאימו את הכוכבות — חברו כל משוואה לתשובה שלה!</div>`;
     html += `<div class="match-wrapper" id="match-wrapper">`;
     html += `<div class="match-col" id="match-left">`;
     pairs.forEach((p, i) => {
@@ -2195,7 +2233,7 @@ const GameApp = {
   matchRight(idx) {
     const ms = STATE.matchState;
     if (ms.selectedLeft === null) {
-      GameApp.showToast('Pick an equation first! 👈');
+      GameApp.showToast('בחרו משוואה קודם! 👈');
       return;
     }
 
@@ -2215,7 +2253,7 @@ const GameApp = {
 
       if (ms.matchedCount >= ms.pairs.length) {
         setTimeout(() => {
-          GameApp.showFeedback('🌟 All matched!', true);
+          GameApp.showFeedback('🌟 כל ההתאמות נכונות!', true);
           setTimeout(() => GameApp.stageComplete(), 1200);
         }, 400);
       }
@@ -2240,8 +2278,8 @@ const GameApp = {
 
     const q = ss.questions[0];
 
-    let html = `<div class="question-type-label">⚡ Stardust Sequence — answer 5 questions in 30 seconds!</div>`;
-    html += `<div class="speed-counter" id="speed-counter">Question 1 of 5</div>`;
+    let html = `<div class="question-type-label">⚡ סיבוב מהירות! — ענו על 5 שאלות ב-30 שניות!</div>`;
+    html += `<div class="speed-counter" id="speed-counter">שאלה 1 מתוך 5</div>`;
     html += `<div id="speed-big-timer" class="speed-big-timer">30</div>`;
     html += `<div class="speed-question" id="speed-question">${q.a} × ${q.b} = ?</div>`;
     html += `<div class="answer-display" id="answer-display"><span id="answer-text"></span><span class="answer-cursor"></span></div>`;
@@ -2249,9 +2287,10 @@ const GameApp = {
     for (let d = 1; d <= 9; d++) {
       html += `<button class="numpad-btn" onclick="GameApp.speedNumpadInput('${d}')" aria-label="${d}">${d}</button>`;
     }
-    html += `<button class="numpad-btn btn-skip-q" onclick="GameApp.speedSkip()" aria-label="Skip">Skip</button>`;
+    html += `<button class="numpad-btn btn-skip-q" onclick="GameApp.speedSkip()" aria-label="דלג">דלג</button>`;
     html += `<button class="numpad-btn" onclick="GameApp.speedNumpadInput('0')" aria-label="0">0</button>`;
-    html += `<button class="numpad-btn btn-backspace" onclick="GameApp.speedNumpadInput('back')" aria-label="Backspace">⌫</button>`;
+    html += `<button class="numpad-btn btn-backspace" onclick="GameApp.speedNumpadInput('back')" aria-label="מחק">⌫</button>`;
+    html += `<button class="numpad-btn btn-confirm" onclick="GameApp.numpadInput('confirm')" aria-label="אשר תשובה">✓</button>`;
     html += `</div>`;
 
     main.innerHTML = html;
@@ -2277,6 +2316,15 @@ const GameApp = {
     const ss = STATE.speedState;
     if (val === 'back') {
       STATE.currentInput = STATE.currentInput.slice(0, -1);
+    } else if (val === 'confirm') {
+      const q = ss.questions[ss.qIdx];
+      const input = parseInt(STATE.currentInput);
+      if (!isNaN(input) && input === q.ans) {
+        GameApp.speedCorrect();
+      } else {
+        GameApp.speedSkip();
+      }
+      return;
     } else {
       if (STATE.currentInput.length < 3) {
         STATE.currentInput += val;
@@ -2316,7 +2364,7 @@ const GameApp = {
     const counter = document.getElementById('speed-counter');
     const atEl = document.getElementById('answer-text');
     if (qEl) qEl.textContent = `${q.a} × ${q.b} = ?`;
-    if (counter) counter.textContent = `Question ${ss.qIdx + 1} of 5`;
+    if (counter) counter.textContent = `שאלה ${ss.qIdx + 1} מתוך 5`;
     if (atEl) atEl.textContent = '';
   },
 
@@ -2335,7 +2383,7 @@ const GameApp = {
     const counter = document.getElementById('speed-counter');
     const atEl = document.getElementById('answer-text');
     if (qEl) qEl.textContent = `${q.a} × ${q.b} = ?`;
-    if (counter) counter.textContent = `Question ${ss.qIdx + 1} of 5`;
+    if (counter) counter.textContent = `שאלה ${ss.qIdx + 1} מתוך 5`;
     if (atEl) atEl.textContent = '';
   },
 
@@ -2349,12 +2397,12 @@ const GameApp = {
       <div style="text-align:center;padding:20px;">
         <div style="font-size:64px;margin-bottom:16px;">${score >= 4 ? '🌟' : score >= 2 ? '⭐' : '💜'}</div>
         <div style="font-family:'Fredoka One';font-size:36px;color:var(--deep);margin-bottom:8px;">
-          ${score} / 5 correct!
+          ${score} / 5 נכון!
         </div>
         <div style="font-size:22px;color:#555;margin-bottom:24px;">
-          ${score === 5 ? "Perfect! You're a speed wizard! ⚡" : score >= 3 ? "Great job! Keep practicing! 🌟" : "Nice try! Lumi believes in you! 💜"}
+          ${score === 5 ? "מושלם! אתה קוסם מהירות! ⚡" : score >= 3 ? "כל הכבוד! המשיכו להתאמן! 🌟" : "ניסיון טוב! לומי מאמינה בכם! 💜"}
         </div>
-        <button class="btn-go" onclick="GameApp.stageComplete()">Continue →</button>
+        <button class="btn-go" onclick="GameApp.stageComplete()">המשך →</button>
       </div>`;
     if (score >= 4) { Audio.levelUp(); GameApp.showBurst(); }
   },
@@ -2432,7 +2480,7 @@ const GameApp = {
         </div>
       </div>`;
 
-    html += `<div class="question-type-label">⚔️ Boss Challenge! (${STATE.stageQIdx + 1}/${totalQ})</div>`;
+    html += `<div class="question-type-label">⚔️ אתגר הבוס! (${STATE.stageQIdx + 1}/${totalQ})</div>`;
     html += `<div class="question-display">${q.a} × ${q.b} = ?</div>`;
 
     if (q.isMC) {
@@ -2447,9 +2495,10 @@ const GameApp = {
       for (let d = 1; d <= 9; d++) {
         html += `<button class="numpad-btn" onclick="GameApp.numpadInput('${d}')" aria-label="${d}">${d}</button>`;
       }
-      html += `<button class="numpad-btn btn-skip-q" onclick="GameApp.skipQuestion()" aria-label="Skip">Skip</button>`;
+      html += `<button class="numpad-btn btn-skip-q" onclick="GameApp.skipQuestion()" aria-label="דלג">דלג</button>`;
       html += `<button class="numpad-btn" onclick="GameApp.numpadInput('0')" aria-label="0">0</button>`;
-      html += `<button class="numpad-btn btn-backspace" onclick="GameApp.numpadInput('back')" aria-label="Backspace">⌫</button>`;
+      html += `<button class="numpad-btn btn-backspace" onclick="GameApp.numpadInput('back')" aria-label="מחק">⌫</button>`;
+      html += `<button class="numpad-btn btn-confirm" onclick="GameApp.numpadInput('confirm')" aria-label="אשר תשובה">✓</button>`;
       html += `</div>`;
     }
 
@@ -2514,9 +2563,9 @@ const GameApp = {
     main.innerHTML = `
       <div style="text-align:center;padding:20px;">
         <div style="font-size:56px;margin-bottom:16px;">💜</div>
-        <div style="font-family:'Fredoka One';font-size:32px;color:var(--deep);margin-bottom:12px;">So close!</div>
-        <div style="font-size:22px;color:#555;margin-bottom:24px;">The dragon is still there! Give it another try — you can do it! 🦄</div>
-        <button class="btn-go" onclick="GameApp.retryBoss()">Try Again! 💪</button>
+        <div style="font-family:'Fredoka One';font-size:32px;color:var(--deep);margin-bottom:12px;">כמעט!</div>
+        <div style="font-size:22px;color:#555;margin-bottom:24px;">הדרקון עדיין שם! תנו עוד ניסיון — אתם יכולים! 🦄</div>
+        <button class="btn-go" onclick="GameApp.retryBoss()">נסה שוב! 💪</button>
       </div>`;
   },
 
@@ -2544,7 +2593,7 @@ const GameApp = {
       // Boss defeated!
       Audio.levelUp();
       GameApp.showBurst();
-      GameApp.showFeedback('🐉 Dragon defeated! 🌟', true);
+      GameApp.showFeedback('🐉 הדרקון הובס! 🌟', true);
       if (STATE.timer) clearInterval(STATE.timer);
       setTimeout(() => GameApp.stageComplete(), 1500);
     } else {
@@ -2565,21 +2614,21 @@ const GameApp = {
     Storage.setResult(world.id, stars);
 
     const starStr = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
-    document.getElementById('results-title').textContent = world.id === 7 ? '🏆 You are a Multiplication Master!' : `✨ ${world.name} Complete!`;
+    document.getElementById('results-title').textContent = world.id === 7 ? '🏆 אתה אמן כפל!' : `✨ ${world.name} הושלם!`;
     document.getElementById('results-stars').textContent = starStr;
     document.getElementById('results-stats').innerHTML = `
-      Questions answered: <span>${STATE.currentStageIdx > 0 ? 'all' : '5'}</span><br>
-      Wrong answers: <span>${wrong}</span><br>
-      Hints used: <span>${hints}</span><br>
-      ${stars === 3 ? '✨ Perfect run! You are magical!' : stars === 2 ? '🌟 Great job, keep practicing!' : '💜 You completed it! Keep going!'}
+      שאלות שנענו: <span>${STATE.currentStageIdx > 0 ? 'הכל' : '5'}</span><br>
+      תשובות שגויות: <span>${wrong}</span><br>
+      רמזים שנוצלו: <span>${hints}</span><br>
+      ${stars === 3 ? '✨ ריצה מושלמת! אתה קסום!' : stars === 2 ? '🌟 כל הכבוד, המשיכו להתאמן!' : '💜 השלמת אותו! המשיכו!'}
     `;
 
     const nextBtn = document.getElementById('results-next-btn');
     if (world.id === 7) {
-      nextBtn.textContent = '🏆 View Certificate';
+      nextBtn.textContent = '🏆 צפה בתעודה';
       nextBtn.onclick = () => GameApp.showCertificate();
     } else if (Storage.isUnlocked(world.id + 1)) {
-      nextBtn.textContent = 'Next World →';
+      nextBtn.textContent = '← העולם הבא';
       nextBtn.onclick = () => GameApp.goToNextWorld();
       nextBtn.style.display = '';
     } else {
@@ -2606,7 +2655,7 @@ const GameApp = {
   // ===== PROGRESS =====
   showProgress() {
     Audio.click();
-    document.getElementById('progress-player').textContent = STATE.playerName ? `${STATE.playerName}'s journey ✨` : 'Your magical journey ✨';
+    document.getElementById('progress-player').textContent = STATE.playerName ? `המסע של ${STATE.playerName} ✨` : 'המסע הקסום שלך ✨';
     const grid = document.getElementById('progress-grid');
     grid.innerHTML = '';
 
@@ -2619,7 +2668,7 @@ const GameApp = {
         <div style="font-size:32px;margin-bottom:8px;">${w.emoji}</div>
         <div class="p-world-name">${w.name}</div>
         <div class="p-stars">${unlocked ? '⭐'.repeat(stars) + '☆'.repeat(3-stars) : '🔒'}</div>
-        <div class="p-tables">${unlocked ? `Tables: ×${w.tables.join(', ×')}` : 'Locked'}</div>
+        <div class="p-tables">${unlocked ? `לוחות: ×${w.tables.join(', ×')}` : 'נעול'}</div>
       `;
       grid.appendChild(card);
     });
@@ -2630,7 +2679,7 @@ const GameApp = {
 
   // ===== CERTIFICATE =====
   showCertificate() {
-    document.getElementById('cert-name').textContent = STATE.playerName || 'Young Wizard';
+    document.getElementById('cert-name').textContent = STATE.playerName || 'קוסם צעיר';
     Screens.show('certificate');
   }
 };
