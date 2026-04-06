@@ -1041,6 +1041,52 @@
     font-style: italic;
     border: 2px solid rgba(200,170,255,0.4);
   }
+
+  /* ===== SCENE ROW (world illustrations) ===== */
+  .scene-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 6px;
+    width: 100%;
+  }
+  .scene-illustration {
+    flex-shrink: 0;
+  }
+
+  /* ===== LUMI WALK ANIMATION ===== */
+  @keyframes lumiWalk {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-4px) rotate(1deg); }
+    75% { transform: translateY(-2px) rotate(-1deg); }
+  }
+  .lumi-container.walking {
+    animation: lumiWalk 0.6s ease-in-out infinite !important;
+  }
+
+  /* ===== BOSS DEFEAT SCENE ===== */
+  .boss-defeat-scene {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 20px;
+    padding: 20px;
+  }
+  .boss-defeat-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(24px, 4vw, 42px);
+    color: var(--deep);
+    text-align: center;
+    text-shadow: 0 3px 0 rgba(45,27,105,0.15);
+    animation: feedbackAnim 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    background: rgba(255,255,255,0.85);
+    border-radius: 20px;
+    padding: 16px 32px;
+    border: 3px solid var(--stardust);
+  }
 </style>
 </head>
 <body>
@@ -1898,39 +1944,45 @@ const GameApp = {
 
     let html = '';
 
-    // Lumi character
-    html += `<div class="lumi-container" id="lumi-anim">
-      <svg width="100" height="84" viewBox="0 0 180 150" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="90" cy="100" rx="55" ry="38" fill="white" stroke="#e8e0f8" stroke-width="2"/>
-        <rect x="65" y="128" width="12" height="22" rx="6" fill="white" stroke="#e8e0f8" stroke-width="2"/>
-        <rect x="82" y="130" width="12" height="20" rx="6" fill="white" stroke="#e8e0f8" stroke-width="2"/>
-        <rect x="100" y="130" width="12" height="20" rx="6" fill="white" stroke="#e8e0f8" stroke-width="2"/>
-        <rect x="116" y="128" width="12" height="22" rx="6" fill="white" stroke="#e8e0f8" stroke-width="2"/>
-        <ellipse cx="75" cy="80" rx="22" ry="28" fill="white" stroke="#e8e0f8" stroke-width="2"/>
-        <ellipse cx="68" cy="52" rx="28" ry="24" fill="white" stroke="#e8e0f8" stroke-width="2"/>
-        <ellipse cx="50" cy="58" rx="14" ry="10" fill="#fff0f8" stroke="#e8e0f8" stroke-width="1.5"/>
-        <ellipse cx="45" cy="60" rx="3" ry="2" fill="#ffb3de"/>
-        <circle cx="62" cy="48" r="7" fill="#2d1b69"/>
-        <circle cx="64" cy="46" r="2.5" fill="white"/>
-        <polygon points="68,28 62,8 74,28" fill="url(#hg1)"/>
-        <polygon points="80,36 90,20 95,38" fill="white" stroke="#e8e0f8" stroke-width="1.5"/>
-        <polygon points="82,36 90,24 93,38" fill="#ffb3de"/>
-        <path d="M90,30 C105,20 120,30 118,50 C116,65 105,68 100,75" stroke="#FF6B6B" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M90,34 C109,24 124,34 122,54 C120,69 109,72 104,79" stroke="#A8EDBB" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M90,36 C111,26 126,36 124,56 C122,71 111,74 106,81" stroke="#C8AAFF" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M140,95 C165,80 170,100 165,115 C160,130 150,125 155,135" stroke="#FFE97A" stroke-width="5" fill="none" stroke-linecap="round"/>
-        <ellipse cx="54" cy="58" rx="6" ry="4" fill="#ffb3de" opacity="0.5"/>
-        <defs>
-          <linearGradient id="hg1" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#FFF8DC"/>
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>`;
-
+    // Lumi character + world scene
     const worldIdx = (STATE.currentWorld.id - 1);
     const contexts = CONFIG.questionContexts[worldIdx];
     const ctx = contexts[Math.floor(Math.random() * contexts.length)];
+
+    html += `<div class="scene-row">
+      <div class="lumi-container walking" id="lumi-anim">
+        <svg width="100" height="84" viewBox="0 0 180 150" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="90" cy="100" rx="55" ry="38" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+          <rect x="55" y="126" width="12" height="24" rx="6" fill="white" stroke="#e8e0f8" stroke-width="2" transform="rotate(-8 61 138)"/>
+          <rect x="78" y="132" width="12" height="20" rx="6" fill="white" stroke="#e8e0f8" stroke-width="2" transform="rotate(6 84 142)"/>
+          <rect x="100" y="132" width="12" height="20" rx="6" fill="white" stroke="#e8e0f8" stroke-width="2" transform="rotate(-6 106 142)"/>
+          <rect x="118" y="126" width="12" height="24" rx="6" fill="white" stroke="#e8e0f8" stroke-width="2" transform="rotate(8 124 138)"/>
+          <ellipse cx="75" cy="80" rx="22" ry="28" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+          <ellipse cx="68" cy="52" rx="28" ry="24" fill="white" stroke="#e8e0f8" stroke-width="2"/>
+          <ellipse cx="50" cy="58" rx="14" ry="10" fill="#fff0f8" stroke="#e8e0f8" stroke-width="1.5"/>
+          <ellipse cx="45" cy="60" rx="3" ry="2" fill="#ffb3de"/>
+          <circle cx="62" cy="48" r="7" fill="#2d1b69"/>
+          <circle cx="64" cy="46" r="2.5" fill="white"/>
+          <polygon points="68,28 62,8 74,28" fill="url(#hgw1)"/>
+          <polygon points="80,36 90,20 95,38" fill="white" stroke="#e8e0f8" stroke-width="1.5"/>
+          <polygon points="82,36 90,24 93,38" fill="#ffb3de"/>
+          <path d="M90,30 C105,20 120,30 118,50 C116,65 105,68 100,75" stroke="#FF6B6B" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M90,34 C109,24 124,34 122,54 C120,69 109,72 104,79" stroke="#A8EDBB" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M90,36 C111,26 126,36 124,56 C122,71 111,74 106,81" stroke="#C8AAFF" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M140,95 C165,80 170,100 165,115 C160,130 150,125 155,135" stroke="#FFE97A" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <ellipse cx="54" cy="58" rx="6" ry="4" fill="#ffb3de" opacity="0.5"/>
+          <defs>
+            <linearGradient id="hgw1" x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#FFF8DC"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="scene-illustration">
+        ${GameApp.getWorldScene(STATE.currentWorld.id, type)}
+      </div>
+    </div>`;
+
     html += `<div class="question-context">${ctx}</div>`;
 
     if (type === 'C') {
@@ -2591,11 +2643,7 @@ const GameApp = {
 
     if (STATE.stageQIdx >= totalQ) {
       // Boss defeated!
-      Audio.levelUp();
-      GameApp.showBurst();
-      GameApp.showFeedback('🐉 הדרקון הובס! 🌟', true);
-      if (STATE.timer) clearInterval(STATE.timer);
-      setTimeout(() => GameApp.stageComplete(), 1500);
+      GameApp.showBossDefeat();
     } else {
       GameApp.renderBossQuestion();
     }
@@ -2681,6 +2729,612 @@ const GameApp = {
   showCertificate() {
     document.getElementById('cert-name').textContent = STATE.playerName || 'קוסם צעיר';
     Screens.show('certificate');
+  },
+
+  // ===== WORLD SCENE ILLUSTRATIONS =====
+  getWorldScene(worldId, stageType) {
+    const scenes = {
+      1: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Ground -->
+        <rect x="0" y="95" width="120" height="25" rx="4" fill="#A8EDBB"/>
+        <!-- Gate posts -->
+        <rect x="18" y="38" width="14" height="60" rx="5" fill="#8B5E3C"/>
+        <rect x="88" y="38" width="14" height="60" rx="5" fill="#8B5E3C"/>
+        <!-- Crossbar top -->
+        <rect x="16" y="38" width="88" height="12" rx="5" fill="#A0723A"/>
+        <!-- Gate planks left half -->
+        <rect x="22" y="52" width="34" height="10" rx="3" fill="#C8935A"/>
+        <rect x="22" y="65" width="34" height="10" rx="3" fill="#C8935A"/>
+        <rect x="22" y="78" width="34" height="10" rx="3" fill="#C8935A"/>
+        <!-- Gate planks right half -->
+        <rect x="64" y="52" width="34" height="10" rx="3" fill="#C8935A"/>
+        <rect x="64" y="65" width="34" height="10" rx="3" fill="#C8935A"/>
+        <rect x="64" y="78" width="34" height="10" rx="3" fill="#C8935A"/>
+        <!-- Diagonal brace left -->
+        <line x1="22" y1="52" x2="56" y2="88" stroke="#A0723A" stroke-width="3" stroke-linecap="round"/>
+        <!-- Diagonal brace right -->
+        <line x1="98" y1="52" x2="64" y2="88" stroke="#A0723A" stroke-width="3" stroke-linecap="round"/>
+        <!-- Latch -->
+        <rect x="53" y="64" width="14" height="8" rx="3" fill="#FFD700"/>
+        <circle cx="60" cy="68" r="3" fill="#FFA500"/>
+        <!-- Sparkles on latch -->
+        <text x="54" y="60" font-size="12" text-anchor="middle" fill="#FFE97A">✦</text>
+        <text x="66" y="58" font-size="8" text-anchor="middle" fill="#FFD700">✦</text>
+        <!-- Flowers left -->
+        <circle cx="10" cy="88" r="9" fill="#FFB3DE"/>
+        <circle cx="10" cy="88" r="5" fill="#FFE97A"/>
+        <circle cx="10" cy="79" r="7" fill="#FF8EC0"/>
+        <circle cx="10" cy="79" r="4" fill="#FFE97A"/>
+        <!-- Stem left -->
+        <line x1="10" y1="88" x2="10" y2="97" stroke="#4CAF50" stroke-width="2.5"/>
+        <!-- Flowers right -->
+        <circle cx="110" cy="88" r="9" fill="#C8AAFF"/>
+        <circle cx="110" cy="88" r="5" fill="#FFE97A"/>
+        <circle cx="110" cy="79" r="7" fill="#9b5de5"/>
+        <circle cx="110" cy="79" r="4" fill="#FFE97A"/>
+        <line x1="110" y1="88" x2="110" y2="97" stroke="#4CAF50" stroke-width="2.5"/>
+        <!-- More flowers -->
+        <circle cx="4" cy="93" r="6" fill="#FFE97A"/>
+        <circle cx="4" cy="93" r="3" fill="#FF8C00"/>
+        <circle cx="116" cy="93" r="6" fill="#A8EDBB"/>
+        <circle cx="116" cy="93" r="3" fill="#2D8A5A"/>
+      </svg>`,
+
+      2: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Cave arch background -->
+        <ellipse cx="60" cy="75" rx="52" ry="48" fill="#1a0a3a"/>
+        <ellipse cx="60" cy="78" rx="44" ry="42" fill="#0d0520"/>
+        <!-- Crystal door shards -->
+        <polygon points="38,95 44,50 50,95" fill="#7B52AB" opacity="0.9"/>
+        <polygon points="46,95 54,42 62,95" fill="#9b5de5" opacity="0.85"/>
+        <polygon points="58,95 66,48 74,95" fill="#C8AAFF" opacity="0.9"/>
+        <polygon points="70,95 78,54 84,95" fill="#7B52AB" opacity="0.85"/>
+        <!-- Crystal highlights -->
+        <polygon points="38,95 44,50 50,95" fill="url(#cg1)" opacity="0.4"/>
+        <polygon points="58,95 66,48 74,95" fill="url(#cg2)" opacity="0.4"/>
+        <!-- Glowing keyhole -->
+        <circle cx="60" cy="75" r="10" fill="#FFE97A" opacity="0.3"/>
+        <circle cx="60" cy="72" r="6" fill="#1a0a3a" stroke="#FFD700" stroke-width="2"/>
+        <rect x="57" y="72" width="6" height="8" rx="2" fill="#1a0a3a" stroke="#FFD700" stroke-width="2"/>
+        <!-- Glow ring -->
+        <circle cx="60" cy="72" r="9" fill="none" stroke="#FFE97A" stroke-width="2" opacity="0.6"/>
+        <!-- Embedded crystals in arch -->
+        <polygon points="20,68 25,58 30,68" fill="#C8AAFF" opacity="0.8"/>
+        <polygon points="90,68 95,58 100,68" fill="#FFB3DE" opacity="0.8"/>
+        <polygon points="30,45 34,36 38,45" fill="#A8EDBB" opacity="0.7"/>
+        <polygon points="82,45 86,36 90,45" fill="#FFE97A" opacity="0.7"/>
+        <!-- Ground -->
+        <rect x="0" y="100" width="120" height="20" rx="4" fill="#2D1B69"/>
+        <defs>
+          <linearGradient id="cg1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="0.8"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient>
+          <linearGradient id="cg2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="0.8"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient>
+        </defs>
+      </svg>`,
+
+      3: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Ground grass -->
+        <rect x="0" y="98" width="120" height="22" rx="4" fill="#A8EDBB"/>
+        <!-- Mushroom stem -->
+        <rect x="40" y="65" width="40" height="40" rx="8" fill="#F5DEB3"/>
+        <!-- Stem spots -->
+        <ellipse cx="52" cy="80" rx="5" ry="4" fill="#E8C890" opacity="0.6"/>
+        <ellipse cx="68" cy="88" rx="4" ry="3" fill="#E8C890" opacity="0.6"/>
+        <!-- Mushroom cap -->
+        <ellipse cx="60" cy="55" rx="52" ry="38" fill="#E53935"/>
+        <ellipse cx="60" cy="52" rx="50" ry="35" fill="#EF5350"/>
+        <!-- White spots on cap -->
+        <circle cx="30" cy="50" r="9" fill="white" opacity="0.9"/>
+        <circle cx="55" cy="38" r="10" fill="white" opacity="0.9"/>
+        <circle cx="82" cy="48" r="8" fill="white" opacity="0.9"/>
+        <circle cx="43" cy="62" r="6" fill="white" opacity="0.8"/>
+        <circle cx="72" cy="64" r="7" fill="white" opacity="0.8"/>
+        <!-- Arched door in stem -->
+        <path d="M47,105 L47,78 Q60,68 73,78 L73,105 Z" fill="#8B4513"/>
+        <path d="M49,105 L49,79 Q60,70 71,79 L71,105 Z" fill="#5a2d0c"/>
+        <!-- Round window -->
+        <circle cx="60" cy="76" r="6" fill="#87CEEB" stroke="#8B4513" stroke-width="2"/>
+        <line x1="57" y1="76" x2="63" y2="76" stroke="#8B4513" stroke-width="1.5"/>
+        <line x1="60" y1="73" x2="60" y2="79" stroke="#8B4513" stroke-width="1.5"/>
+        <!-- Question mark sign -->
+        <rect x="55" y="84" width="10" height="13" rx="2" fill="#FFE97A"/>
+        <text x="60" y="94" font-size="9" text-anchor="middle" fill="#2D1B69" font-weight="bold">?</text>
+        <!-- Small flowers -->
+        <circle cx="15" cy="101" r="5" fill="#FFB3DE"/>
+        <circle cx="15" cy="101" r="2.5" fill="#FFE97A"/>
+        <circle cx="105" cy="101" r="5" fill="#C8AAFF"/>
+        <circle cx="105" cy="101" r="2.5" fill="#FFE97A"/>
+        <circle cx="28" cy="100" r="4" fill="#FFE97A"/>
+        <circle cx="92" cy="100" r="4" fill="#A8EDBB"/>
+      </svg>`,
+
+      4: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Sky with rainbow -->
+        <rect x="0" y="0" width="120" height="120" fill="#87CEEB" opacity="0.3"/>
+        <!-- Rainbow arcs -->
+        <path d="M5,80 Q60,-10 115,80" stroke="#FF6B6B" stroke-width="5" fill="none" opacity="0.7"/>
+        <path d="M8,80 Q60,-3 112,80" stroke="#FF8C00" stroke-width="4" fill="none" opacity="0.7"/>
+        <path d="M11,80 Q60,4 109,80" stroke="#FFE97A" stroke-width="4" fill="none" opacity="0.7"/>
+        <path d="M14,80 Q60,10 106,80" stroke="#A8EDBB" stroke-width="4" fill="none" opacity="0.7"/>
+        <path d="M17,80 Q60,15 103,80" stroke="#87CEEB" stroke-width="4" fill="none" opacity="0.7"/>
+        <path d="M20,80 Q60,19 100,80" stroke="#C8AAFF" stroke-width="4" fill="none" opacity="0.7"/>
+        <!-- Water below -->
+        <rect x="0" y="95" width="120" height="25" rx="0" fill="#2e86de" opacity="0.7"/>
+        <path d="M0,97 Q15,93 30,97 Q45,101 60,97 Q75,93 90,97 Q105,101 120,97" stroke="#4facfe" stroke-width="2" fill="none"/>
+        <!-- Stone bridge left section -->
+        <rect x="0" y="78" width="38" height="18" rx="4" fill="#888"/>
+        <rect x="2" y="78" width="16" height="18" rx="3" fill="#999"/>
+        <rect x="20" y="78" width="16" height="18" rx="3" fill="#999"/>
+        <!-- Stone bridge right section -->
+        <rect x="82" y="78" width="38" height="18" rx="4" fill="#888"/>
+        <rect x="84" y="78" width="16" height="18" rx="3" fill="#999"/>
+        <rect x="102" y="78" width="16" height="18" rx="3" fill="#999"/>
+        <!-- Gap in middle with dashed outline -->
+        <rect x="39" y="77" width="42" height="20" rx="3" fill="none" stroke="#FFE97A" stroke-width="2.5" stroke-dasharray="5,4"/>
+        <!-- Floating missing piece -->
+        <rect x="42" y="54" width="36" height="18" rx="4" fill="#AAA" stroke="#FFD700" stroke-width="2"/>
+        <text x="60" y="67" font-size="10" text-anchor="middle" fill="#2D1B69" font-weight="bold">3×4</text>
+        <!-- Small sparkle near piece -->
+        <text x="80" y="52" font-size="11" fill="#FFE97A">✦</text>
+        <text x="40" y="52" font-size="9" fill="#FFE97A">✦</text>
+      </svg>`,
+
+      5: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background sky -->
+        <rect x="0" y="0" width="120" height="120" fill="#b0c4ff" opacity="0.3"/>
+        <!-- Big cloud base -->
+        <ellipse cx="60" cy="88" rx="55" ry="22" fill="white"/>
+        <ellipse cx="35" cy="82" rx="30" ry="20" fill="white"/>
+        <ellipse cx="85" cy="80" rx="28" ry="20" fill="white"/>
+        <ellipse cx="60" cy="76" rx="36" ry="22" fill="white"/>
+        <!-- Castle tower on cloud -->
+        <rect x="46" y="40" width="28" height="40" rx="3" fill="#d8d8f0"/>
+        <!-- Battlements -->
+        <rect x="44" y="34" width="8" height="10" rx="2" fill="#d8d8f0"/>
+        <rect x="56" y="34" width="8" height="10" rx="2" fill="#d8d8f0"/>
+        <rect x="68" y="34" width="8" height="10" rx="2" fill="#d8d8f0"/>
+        <!-- Castle window -->
+        <rect x="54" y="48" width="12" height="14" rx="6" fill="#7B52AB" opacity="0.6"/>
+        <!-- Drawbridge gate -->
+        <rect x="51" y="64" width="18" height="18" rx="3" fill="#8B5E3C"/>
+        <!-- Chains -->
+        <line x1="51" y1="64" x2="44" y2="55" stroke="#888" stroke-width="2.5"/>
+        <line x1="69" y1="64" x2="76" y2="55" stroke="#888" stroke-width="2.5"/>
+        <!-- Chain links -->
+        <ellipse cx="47" cy="59" rx="2" ry="3" fill="none" stroke="#888" stroke-width="2"/>
+        <ellipse cx="73" cy="59" rx="2" ry="3" fill="none" stroke="#888" stroke-width="2"/>
+        <!-- Stars around -->
+        <text x="18" y="45" font-size="14" fill="#FFE97A">★</text>
+        <text x="95" y="48" font-size="12" fill="#FFE97A">★</text>
+        <text x="8" y="68" font-size="10" fill="#FFE97A">✦</text>
+        <text x="105" y="70" font-size="10" fill="#FFE97A">✦</text>
+        <!-- Small clouds -->
+        <ellipse cx="15" cy="58" rx="12" ry="7" fill="white" opacity="0.8"/>
+        <ellipse cx="105" cy="60" rx="12" ry="7" fill="white" opacity="0.8"/>
+      </svg>`,
+
+      6: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Night sky -->
+        <rect x="0" y="0" width="120" height="120" fill="#0d0520" rx="4"/>
+        <!-- Stars in sky -->
+        <text x="10" y="18" font-size="10" fill="#FFE97A">★</text>
+        <text x="95" y="22" font-size="8" fill="#C8AAFF">★</text>
+        <text x="50" y="12" font-size="9" fill="#FFE97A">✦</text>
+        <text x="75" y="15" font-size="7" fill="white">✦</text>
+        <text x="25" y="30" font-size="7" fill="#FFB3DE">✦</text>
+        <!-- Mountain -->
+        <polygon points="10,100 60,20 110,100" fill="#3d1c6e"/>
+        <polygon points="30,100 60,28 90,100" fill="#4a2080"/>
+        <!-- Snow cap -->
+        <polygon points="48,38 60,20 72,38 60,32" fill="white" opacity="0.9"/>
+        <!-- Stars orbiting vault -->
+        <circle cx="60" cy="38" r="22" fill="none" stroke="#FFE97A" stroke-width="1" stroke-dasharray="3,4" opacity="0.5"/>
+        <!-- Vault/safe -->
+        <rect x="44" y="24" width="32" height="28" rx="5" fill="#7B52AB"/>
+        <rect x="46" y="26" width="28" height="24" rx="4" fill="#9b5de5"/>
+        <!-- Star symbol on vault -->
+        <text x="60" y="42" font-size="16" text-anchor="middle" fill="#FFE97A">★</text>
+        <!-- Padlock -->
+        <rect x="54" y="44" width="12" height="10" rx="3" fill="#FFD700"/>
+        <path d="M56,44 Q56,38 64,38 Q72,38 66,44" stroke="#FFD700" stroke-width="2.5" fill="none"/>
+        <!-- Orbiting mini stars -->
+        <circle cx="38" cy="38" r="3" fill="#FFE97A"/>
+        <circle cx="82" cy="32" r="2.5" fill="#FFB3DE"/>
+        <circle cx="74" cy="55" r="2" fill="#C8AAFF"/>
+      </svg>`,
+
+      7: `<svg width="110" height="110" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <!-- Dark magical background -->
+        <rect x="0" y="0" width="120" height="120" fill="#1a0a1a" rx="4"/>
+        <!-- Stardust sparkles everywhere -->
+        <text x="8" y="18" font-size="10" fill="#FFE97A">✦</text>
+        <text x="95" y="15" font-size="9" fill="#C8AAFF">✦</text>
+        <text x="55" y="10" font-size="8" fill="#FFB3DE">✦</text>
+        <text x="25" y="25" font-size="7" fill="#FFE97A">★</text>
+        <text x="88" y="30" font-size="9" fill="#FFE97A">★</text>
+        <!-- Treasure chest body -->
+        <rect x="28" y="68" width="64" height="42" rx="6" fill="#8B5E3C"/>
+        <rect x="30" y="70" width="60" height="38" rx="5" fill="#A0723A"/>
+        <!-- Chest lid -->
+        <rect x="26" y="58" width="68" height="18" rx="6" fill="#6B3A1F"/>
+        <rect x="28" y="60" width="64" height="16" rx="5" fill="#8B5E3C"/>
+        <!-- Metal bands on chest -->
+        <rect x="27" y="72" width="66" height="5" fill="#888" rx="2"/>
+        <rect x="27" y="85" width="66" height="5" fill="#888" rx="2"/>
+        <!-- Lock/clasp -->
+        <rect x="52" y="62" width="16" height="12" rx="4" fill="#FFD700"/>
+        <circle cx="60" cy="66" r="4" fill="#FFA500"/>
+        <!-- Heavy chain across chest -->
+        <path d="M15,76 Q30,68 45,76 Q60,84 75,76 Q90,68 105,76" stroke="#888" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <!-- Chain links detail -->
+        <ellipse cx="28" cy="71" rx="5" ry="3" fill="none" stroke="#aaa" stroke-width="2"/>
+        <ellipse cx="60" cy="80" rx="5" ry="3" fill="none" stroke="#aaa" stroke-width="2"/>
+        <ellipse cx="92" cy="71" rx="5" ry="3" fill="none" stroke="#aaa" stroke-width="2"/>
+        <!-- Gold coins spilling -->
+        <ellipse cx="20" cy="92" rx="8" ry="5" fill="#FFD700"/>
+        <ellipse cx="100" cy="88" rx="7" ry="5" fill="#FFD700"/>
+        <ellipse cx="110" cy="100" rx="7" ry="5" fill="#FFC107"/>
+        <ellipse cx="12" cy="105" rx="6" ry="4" fill="#FFD700"/>
+        <!-- Math stars scattered -->
+        <text x="14" y="62" font-size="14" fill="#FFE97A">★</text>
+        <text x="95" y="58" font-size="12" fill="#FFE97A">★</text>
+        <text x="104" y="78" font-size="10" fill="#FFB3DE">★</text>
+        <text x="6" y="82" font-size="10" fill="#C8AAFF">★</text>
+      </svg>`
+    };
+    return scenes[worldId] || scenes[1];
+  },
+
+  // ===== BOSS DEFEAT ANIMATION =====
+  showBossDefeat() {
+    if (STATE.timer) clearInterval(STATE.timer);
+    Audio.levelUp();
+    GameApp.showBurst();
+    const main = document.getElementById('game-main');
+    const defeats = ['sleep', 'mouse', 'wind', 'pasta', 'dance'];
+    const pick = defeats[Math.floor(Math.random() * defeats.length)];
+    const dragonColor = STATE.currentWorld.id === 7 ? '#FFD700' : STATE.currentWorld.id === 1 ? '#9b5de5' : '#c8aaff';
+    main.innerHTML = GameApp.getBossDefeatHTML(pick, dragonColor);
+    setTimeout(() => GameApp.stageComplete(), 3800);
+  },
+
+  getBossDefeatHTML(type, dragonColor) {
+    const dc = dragonColor;
+    const dcs = dragonColor === '#FFD700' ? '#ccaa00' : dragonColor === '#9b5de5' ? '#7a44c8' : '#9a80dd';
+
+    if (type === 'sleep') {
+      return `<style>
+        @keyframes zzFloat{0%{transform:translate(0,0) scale(0.5);opacity:0}50%{opacity:1}100%{transform:translate(-20px,-60px) scale(1.2);opacity:0}}
+        @keyframes starOrbit{0%{transform:rotate(0deg) translateX(48px)}100%{transform:rotate(360deg) translateX(48px)}}
+        @keyframes pillowDrop{0%{transform:translateY(-10px);opacity:0}100%{transform:translateY(0);opacity:1}}
+        .zz1{animation:zzFloat 2s ease-in-out infinite}
+        .zz2{animation:zzFloat 2s ease-in-out 0.6s infinite}
+        .zz3{animation:zzFloat 2s ease-in-out 1.2s infinite}
+        .orbit-star{animation:starOrbit 3s linear infinite;transform-origin:0 0}
+        .pillow{animation:pillowDrop 0.8s ease forwards}
+      </style>
+      <div class="boss-defeat-scene">
+        <svg width="260" height="220" viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg">
+          <!-- Ground -->
+          <ellipse cx="130" cy="200" rx="90" ry="14" fill="#A8EDBB" opacity="0.4"/>
+          <!-- Pillow -->
+          <g class="pillow">
+            <rect x="68" y="165" width="80" height="30" rx="12" fill="#FFB3DE" stroke="#FF8EC0" stroke-width="2"/>
+            <ellipse cx="108" cy="175" rx="25" ry="6" fill="white" opacity="0.5"/>
+          </g>
+          <!-- Dragon body sitting -->
+          <ellipse cx="110" cy="160" rx="52" ry="42" fill="${dc}" stroke="${dcs}" stroke-width="3"/>
+          <!-- Dragon tail curled -->
+          <path d="M158,175 Q185,185 180,165 Q175,148 165,155" stroke="${dc}" stroke-width="12" fill="none" stroke-linecap="round"/>
+          <path d="M180,165 Q175,148 165,155" stroke="${dcs}" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <!-- Dragon legs tucked -->
+          <ellipse cx="88" cy="190" rx="18" ry="10" fill="${dc}" stroke="${dcs}" stroke-width="2"/>
+          <ellipse cx="135" cy="192" rx="18" ry="10" fill="${dc}" stroke="${dcs}" stroke-width="2"/>
+          <!-- Dragon head drooping -->
+          <ellipse cx="90" cy="130" rx="38" ry="32" fill="${dc}" stroke="${dcs}" stroke-width="3"/>
+          <!-- Snout -->
+          <ellipse cx="64" cy="142" rx="18" ry="12" fill="${dcs}"/>
+          <!-- Nostrils -->
+          <ellipse cx="59" cy="146" rx="4" ry="2.5" fill="#1a0a3a" opacity="0.5"/>
+          <ellipse cx="69" cy="146" rx="4" ry="2.5" fill="#1a0a3a" opacity="0.5"/>
+          <!-- Closed eyes (curved lines) -->
+          <path d="M80,122 Q88,118 96,122" stroke="#1a0a3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M102,120 Q110,116 118,120" stroke="#1a0a3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- Mouth open slightly snoring -->
+          <path d="M78,138 Q90,145 102,138" stroke="#1a0a3a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <!-- Little tongue -->
+          <ellipse cx="90" cy="142" rx="7" ry="4" fill="#FF8EC0"/>
+          <!-- Ear/horn -->
+          <polygon points="100,100 108,82 116,100" fill="${dcs}"/>
+          <!-- Wing folded -->
+          <path d="M145,145 Q175,120 180,140 Q182,155 162,158 Z" fill="${dcs}" stroke="${dc}" stroke-width="2"/>
+          <!-- ZZZ floating -->
+          <text x="145" y="120" font-size="24" fill="#C8AAFF" font-family="Fredoka One,cursive" class="zz1">Z</text>
+          <text x="160" y="95" font-size="32" fill="#9b5de5" font-family="Fredoka One,cursive" class="zz2">Z</text>
+          <text x="172" y="62" font-size="40" fill="#7B52AB" font-family="Fredoka One,cursive" class="zz3">Z</text>
+          <!-- Orbiting stars around head -->
+          <g style="transform-origin:90px 130px">
+            <circle class="orbit-star" cx="90" cy="130" r="5" fill="#FFE97A"/>
+          </g>
+          <g style="transform-origin:90px 130px;animation:starOrbit 3s linear 1s infinite">
+            <circle cx="90" cy="82" r="4" fill="#FFB3DE"/>
+          </g>
+        </svg>
+        <div class="boss-defeat-label">הדרקון נרדם! 😴 ניצחתם!</div>
+      </div>`;
+    }
+
+    if (type === 'mouse') {
+      return `<style>
+        @keyframes dragonShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,-4px) rotate(-5deg)}40%{transform:translate(6px,-8px) rotate(5deg)}60%{transform:translate(-4px,-6px) rotate(-3deg)}80%{transform:translate(4px,-2px) rotate(3deg)}}
+        @keyframes mousePeek{0%,100%{transform:translateX(0)}50%{transform:translateX(10px)}}
+        @keyframes sweatFly{0%{transform:translate(0,0);opacity:1}100%{transform:translate(20px,-25px);opacity:0}}
+        @keyframes frightLine{0%,100%{opacity:0.3;transform:scale(0.9)}50%{opacity:1;transform:scale(1.1)}}
+        .dragon-shake{animation:dragonShake 0.4s ease-in-out infinite}
+        .mouse-peek{animation:mousePeek 1.2s ease-in-out infinite}
+        .sweat1{animation:sweatFly 1s ease-out infinite}
+        .sweat2{animation:sweatFly 1s ease-out 0.4s infinite}
+        .fright{animation:frightLine 0.5s ease-in-out infinite}
+      </style>
+      <div class="boss-defeat-scene">
+        <svg width="260" height="220" viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg">
+          <!-- Ground -->
+          <ellipse cx="130" cy="205" rx="100" ry="12" fill="#A8EDBB" opacity="0.4"/>
+          <!-- Fright lines radiating -->
+          <line x1="90" y1="90" x2="55" y2="55" stroke="#FFE97A" stroke-width="2.5" class="fright"/>
+          <line x1="105" y1="80" x2="85" y2="40" stroke="#FFE97A" stroke-width="2.5" class="fright"/>
+          <line x1="120" y1="78" x2="115" y2="35" stroke="#FFE97A" stroke-width="2.5" class="fright"/>
+          <line x1="135" y1="80" x2="148" y2="38" stroke="#FFE97A" stroke-width="2.5" class="fright"/>
+          <line x1="148" y1="88" x2="175" y2="55" stroke="#FFE97A" stroke-width="2.5" class="fright"/>
+          <!-- Dragon body - jumping up -->
+          <g class="dragon-shake">
+            <!-- Body -->
+            <ellipse cx="118" cy="148" rx="52" ry="42" fill="${dc}" stroke="${dcs}" stroke-width="3"/>
+            <!-- Tail -->
+            <path d="M165,158 Q200,150 195,170 Q190,185 175,178" stroke="${dc}" stroke-width="12" fill="none" stroke-linecap="round"/>
+            <!-- Legs up/flailing -->
+            <ellipse cx="95" cy="182" rx="16" ry="10" fill="${dc}" stroke="${dcs}" stroke-width="2" transform="rotate(-20 95 182)"/>
+            <ellipse cx="142" cy="185" rx="16" ry="10" fill="${dc}" stroke="${dcs}" stroke-width="2" transform="rotate(20 142 185)"/>
+            <!-- Head -->
+            <ellipse cx="95" cy="112" rx="38" ry="32" fill="${dc}" stroke="${dcs}" stroke-width="3"/>
+            <!-- Snout -->
+            <ellipse cx="68" cy="124" rx="18" ry="12" fill="${dcs}"/>
+            <!-- Wide scared eyes -->
+            <circle cx="86" cy="106" r="12" fill="white" stroke="${dcs}" stroke-width="2"/>
+            <circle cx="86" cy="106" r="7" fill="#1a0a3a"/>
+            <circle cx="88" cy="104" r="2.5" fill="white"/>
+            <circle cx="108" cy="104" r="12" fill="white" stroke="${dcs}" stroke-width="2"/>
+            <circle cx="108" cy="104" r="7" fill="#1a0a3a"/>
+            <circle cx="110" cy="102" r="2.5" fill="white"/>
+            <!-- Scared mouth -->
+            <path d="M78,128 Q90,122 102,128" stroke="#1a0a3a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <!-- Horn -->
+            <polygon points="100,82 108,62 116,82" fill="${dcs}"/>
+            <!-- Wing raised in fright -->
+            <path d="M155,130 Q190,100 198,125 Q200,145 175,148 Z" fill="${dcs}" stroke="${dc}" stroke-width="2"/>
+            <!-- Sweat drops -->
+            <circle cx="130" cy="88" r="6" fill="#87CEEB" class="sweat1"/>
+            <circle cx="145" cy="78" r="4" fill="#87CEEB" class="sweat2"/>
+          </g>
+          <!-- Tiny mouse at bottom -->
+          <g class="mouse-peek">
+            <!-- Mouse body -->
+            <ellipse cx="85" cy="200" rx="18" ry="13" fill="#8B6347"/>
+            <!-- Mouse head -->
+            <circle cx="72" cy="196" r="10" fill="#8B6347"/>
+            <!-- Ears -->
+            <circle cx="64" cy="188" r="6" fill="#8B6347"/>
+            <circle cx="64" cy="188" r="3.5" fill="#ffb3de"/>
+            <circle cx="74" cy="185" r="5" fill="#8B6347"/>
+            <circle cx="74" cy="185" r="3" fill="#ffb3de"/>
+            <!-- Eyes -->
+            <circle cx="69" cy="195" r="2.5" fill="#1a0a3a"/>
+            <circle cx="70" cy="194" r="1" fill="white"/>
+            <!-- Nose -->
+            <ellipse cx="64" cy="199" r="2.5" ry="2" fill="#FF8EC0"/>
+            <!-- Tail -->
+            <path d="M103,202 Q118,195 115,205 Q112,215 100,210" stroke="#A0723A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+        <div class="boss-defeat-label">עכבר?! הדרקון נבהל! 🐭 ניצחתם!</div>
+      </div>`;
+    }
+
+    if (type === 'wind') {
+      return `<style>
+        @keyframes blownAway{0%{transform:translate(0,0) rotate(0)}30%{transform:translate(40px,-20px) rotate(20deg)}100%{transform:translate(200px,-60px) rotate(45deg);opacity:0}}
+        @keyframes windLine{0%{transform:translateX(-100px);opacity:0}50%{opacity:1}100%{transform:translateX(220px);opacity:0}}
+        @keyframes leafSpin{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(180px,-40px) rotate(360deg);opacity:0}}
+        .blown-dragon{animation:blownAway 3.5s ease-in forwards}
+        .wl1{animation:windLine 1.2s ease-in-out infinite}
+        .wl2{animation:windLine 1.2s ease-in-out 0.3s infinite}
+        .wl3{animation:windLine 1.2s ease-in-out 0.6s infinite}
+        .leaf1{animation:leafSpin 2s ease-out 0.5s infinite}
+        .leaf2{animation:leafSpin 2s ease-out 1.1s infinite}
+        .star-fly{animation:leafSpin 2.5s ease-out 0.2s infinite}
+      </style>
+      <div class="boss-defeat-scene">
+        <svg width="280" height="220" viewBox="0 0 280 220" xmlns="http://www.w3.org/2000/svg">
+          <!-- Wind source (left side clouds/swirl) -->
+          <path d="M5,80 Q25,65 20,85 Q15,100 30,95 Q15,100 5,115" stroke="#87CEEB" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.6"/>
+          <!-- Wind lines -->
+          <path d="M25,72 Q70,68 110,78" stroke="#C8AAFF" stroke-width="3" fill="none" stroke-linecap="round" class="wl1"/>
+          <path d="M25,90 Q80,85 120,95" stroke="#C8AAFF" stroke-width="3" fill="none" stroke-linecap="round" class="wl2"/>
+          <path d="M25,108 Q75,103 115,112" stroke="#C8AAFF" stroke-width="3" fill="none" stroke-linecap="round" class="wl3"/>
+          <!-- Flying leaves -->
+          <ellipse cx="60" cy="130" rx="8" ry="4" fill="#A8EDBB" class="leaf1"/>
+          <ellipse cx="40" cy="110" rx="6" ry="3" fill="#5CDB6F" class="leaf2"/>
+          <!-- Flying stars -->
+          <text x="50" y="100" font-size="14" fill="#FFE97A" class="star-fly">★</text>
+          <!-- Blown-away dragon (tilted) -->
+          <g class="blown-dragon">
+            <!-- Body tilted -->
+            <ellipse cx="150" cy="130" rx="50" ry="38" fill="${dc}" stroke="${dcs}" stroke-width="3" transform="rotate(-25 150 130)"/>
+            <!-- Tail streaming behind -->
+            <path d="M105,145 Q75,135 70,120 Q65,105 80,108" stroke="${dc}" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <!-- Leg flailing -->
+            <ellipse cx="128" cy="162" rx="14" ry="9" fill="${dc}" stroke="${dcs}" stroke-width="2" transform="rotate(30 128 162)"/>
+            <ellipse cx="165" cy="155" rx="14" ry="9" fill="${dc}" stroke="${dcs}" stroke-width="2" transform="rotate(-15 165 155)"/>
+            <!-- Head -->
+            <ellipse cx="182" cy="108" rx="34" ry="28" fill="${dc}" stroke="${dcs}" stroke-width="3"/>
+            <!-- Snout -->
+            <ellipse cx="208" cy="118" rx="16" ry="10" fill="${dcs}"/>
+            <!-- Dizzy eyes -->
+            <text x="176" y="108" font-size="16" fill="#1a0a3a">✕</text>
+            <text x="194" y="106" font-size="16" fill="#1a0a3a">✕</text>
+            <!-- Horn -->
+            <polygon points="175,82 183,60 191,82" fill="${dcs}" transform="rotate(-25 183 72)"/>
+            <!-- Wing outstretched -->
+            <path d="M120,112 Q88,85 82,105 Q78,128 108,130 Z" fill="${dcs}" stroke="${dc}" stroke-width="2"/>
+          </g>
+          <!-- Ground -->
+          <ellipse cx="130" cy="205" rx="110" ry="12" fill="#A8EDBB" opacity="0.3"/>
+        </svg>
+        <div class="boss-defeat-label">הרוח לקחה את הדרקון! 🌪️ ניצחתם!</div>
+      </div>`;
+    }
+
+    if (type === 'pasta') {
+      return `<style>
+        @keyframes dragonRun{0%,100%{transform:translateX(0) scaleX(1)}50%{transform:translateX(22px) scaleX(0.96)}}
+        @keyframes bowlBounce{0%,100%{transform:translate(82px,8px)}50%{transform:translate(100px,-12px)}}
+        @keyframes steamRise{0%{transform:translate(0,0);opacity:1}100%{transform:translate(5px,-22px);opacity:0}}
+        @keyframes heartBeat{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+        .run-dragon{animation:dragonRun 0.5s ease-in-out infinite}
+        .bowl-float{animation:bowlBounce 0.8s ease-in-out infinite}
+        .steam1{animation:steamRise 1.2s ease-out infinite}
+        .steam2{animation:steamRise 1.2s ease-out 0.4s infinite}
+        .steam3{animation:steamRise 1.2s ease-out 0.8s infinite}
+        .heart-beat{animation:heartBeat 0.6s ease-in-out infinite}
+      </style>
+      <div class="boss-defeat-scene">
+        <svg width="280" height="220" viewBox="0 0 280 220" xmlns="http://www.w3.org/2000/svg">
+          <!-- Ground -->
+          <ellipse cx="130" cy="205" rx="110" ry="12" fill="#A8EDBB" opacity="0.4"/>
+          <!-- Floating pasta bowl ahead -->
+          <g class="bowl-float">
+            <!-- Bowl -->
+            <ellipse cx="0" cy="170" rx="30" ry="10" fill="#E8C890"/>
+            <path d="M-30,160 Q0,185 30,160" fill="#E8C890"/>
+            <ellipse cx="0" cy="160" rx="30" ry="8" fill="#F5DEB3"/>
+            <!-- Spaghetti pile -->
+            <path d="M-18,160 Q-5,145 8,155 Q18,148 22,158" stroke="#F4A460" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <path d="M-14,162 Q0,148 14,158 Q20,152 25,162" stroke="#DEB887" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M-20,158 Q-10,142 4,152" stroke="#F4A460" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <!-- Meatballs -->
+            <circle cx="-5" cy="153" r="7" fill="#8B4513"/>
+            <circle cx="12" cy="150" r="6" fill="#8B4513"/>
+            <!-- Steam -->
+            <path d="M-8,143" stroke="#ddd" stroke-width="3" fill="none" class="steam1"/>
+            <path d="M2,140 Q5,130 2,120" stroke="#ddd" stroke-width="2.5" fill="none" class="steam2"/>
+            <path d="M12,143 Q15,133 12,123" stroke="#ddd" stroke-width="2" fill="none" class="steam3"/>
+          </g>
+          <!-- Running dragon -->
+          <g class="run-dragon">
+            <!-- Body leaning forward -->
+            <ellipse cx="115" cy="148" rx="50" ry="38" fill="${dc}" stroke="${dcs}" stroke-width="3" transform="rotate(-12 115 148)"/>
+            <!-- Tail streaming back -->
+            <path d="M72,158 Q40,170 35,155 Q30,138 50,140" stroke="${dc}" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <!-- Running legs -->
+            <ellipse cx="92" cy="182" rx="16" ry="9" fill="${dc}" stroke="${dcs}" stroke-width="2" transform="rotate(-30 92 182)"/>
+            <ellipse cx="140" cy="178" rx="16" ry="9" fill="${dc}" stroke="${dcs}" stroke-width="2" transform="rotate(20 140 178)"/>
+            <!-- Head forward-leaning -->
+            <ellipse cx="155" cy="115" rx="36" ry="30" fill="${dc}" stroke="${dcs}" stroke-width="3" transform="rotate(-12 155 115)"/>
+            <!-- Snout -->
+            <ellipse cx="182" cy="122" rx="16" ry="11" fill="${dcs}"/>
+            <!-- Heart eyes -->
+            <text x="143" y="113" font-size="15" fill="#FF6B6B" class="heart-beat">♥</text>
+            <text x="160" y="110" font-size="14" fill="#FF6B6B" class="heart-beat">♥</text>
+            <!-- Open excited mouth -->
+            <path d="M170,128 Q180,135 190,128" stroke="#1a0a3a" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <!-- Tongue out -->
+            <ellipse cx="180" cy="133" rx="6" ry="4" fill="#FF8EC0"/>
+            <!-- Horn -->
+            <polygon points="147,88 155,68 163,88" fill="${dcs}" transform="rotate(-12 155 78)"/>
+            <!-- Wing flapping back -->
+            <path d="M85,130 Q55,102 50,125 Q48,148 78,148 Z" fill="${dcs}" stroke="${dc}" stroke-width="2"/>
+          </g>
+        </svg>
+        <div class="boss-defeat-label">הדרקון ברח אחרי ספגטי! 🍝 ניצחתם!</div>
+      </div>`;
+    }
+
+    // dance
+    return `<style>
+      @keyframes dragonDance{0%{transform:rotate(-15deg) translate(0,0)}25%{transform:rotate(15deg) translate(5px,-5px)}50%{transform:rotate(-10deg) translate(-5px,0)}75%{transform:rotate(10deg) translate(5px,-3px)}100%{transform:rotate(-15deg) translate(0,0)}}
+      @keyframes discoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+      @keyframes noteFloat{0%{transform:translate(0,0);opacity:0}20%{opacity:1}100%{transform:translate(25px,-55px);opacity:0}}
+      @keyframes floorPulse{0%,100%{opacity:0.3}50%{opacity:0.7}}
+      .dance-dragon{animation:dragonDance 0.6s ease-in-out infinite;transform-origin:130px 150px}
+      .disco-ball{animation:discoPulse 1s ease-in-out infinite}
+      .note1{animation:noteFloat 2s ease-out infinite}
+      .note2{animation:noteFloat 2s ease-out 0.5s infinite}
+      .note3{animation:noteFloat 2s ease-out 1s infinite}
+      .note4{animation:noteFloat 2s ease-out 1.5s infinite}
+      .floor{animation:floorPulse 0.6s ease-in-out infinite}
+    </style>
+    <div class="boss-defeat-scene">
+      <svg width="280" height="220" viewBox="0 0 280 220" xmlns="http://www.w3.org/2000/svg">
+        <!-- Dance floor circles -->
+        <ellipse cx="130" cy="195" rx="100" ry="18" fill="#9b5de5" class="floor"/>
+        <ellipse cx="100" cy="195" rx="20" ry="8" fill="#FFE97A" class="floor"/>
+        <ellipse cx="155" cy="196" rx="18" ry="7" fill="#FFB3DE" class="floor"/>
+        <ellipse cx="75" cy="196" rx="15" ry="6" fill="#C8AAFF" class="floor"/>
+        <ellipse cx="185" cy="196" rx="15" ry="6" fill="#A8EDBB" class="floor"/>
+        <!-- Disco ball in corner -->
+        <g class="disco-ball">
+          <circle cx="235" cy="30" r="20" fill="#ddd" stroke="#bbb" stroke-width="2"/>
+          <!-- Facets -->
+          <line x1="215" y1="30" x2="255" y2="30" stroke="#aaa" stroke-width="1"/>
+          <line x1="235" y1="10" x2="235" y2="50" stroke="#aaa" stroke-width="1"/>
+          <line x1="221" y1="16" x2="249" y2="44" stroke="#aaa" stroke-width="1"/>
+          <line x1="249" y1="16" x2="221" y2="44" stroke="#aaa" stroke-width="1"/>
+          <!-- Sparkle beams from disco ball -->
+          <line x1="220" y1="15" x2="205" y2="5" stroke="#FFE97A" stroke-width="2"/>
+          <line x1="250" y1="20" x2="265" y2="10" stroke="#FFB3DE" stroke-width="2"/>
+          <line x1="215" y1="40" x2="195" y2="50" stroke="#C8AAFF" stroke-width="2"/>
+          <line x1="255" y1="40" x2="270" y2="55" stroke="#A8EDBB" stroke-width="2"/>
+          <!-- Hang wire -->
+          <line x1="235" y1="10" x2="235" y2="0" stroke="#888" stroke-width="1.5"/>
+        </g>
+        <!-- Musical notes -->
+        <text x="40" y="80" font-size="22" fill="#FFE97A" class="note1">♪</text>
+        <text x="200" y="90" font-size="26" fill="#FFB3DE" class="note2">♫</text>
+        <text x="25" y="130" font-size="20" fill="#C8AAFF" class="note3">♪</text>
+        <text x="215" y="130" font-size="24" fill="#A8EDBB" class="note4">♫</text>
+        <!-- Dancing dragon -->
+        <g class="dance-dragon">
+          <!-- Body -->
+          <ellipse cx="130" cy="148" rx="50" ry="40" fill="${dc}" stroke="${dcs}" stroke-width="3"/>
+          <!-- Tail wagging -->
+          <path d="M178,155 Q210,140 205,160 Q200,178 185,170" stroke="${dc}" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <!-- Arms up (dancing pose) -->
+          <ellipse cx="92" cy="122" rx="10" ry="22" fill="${dc}" stroke="${dcs}" stroke-width="2" transform="rotate(-40 92 122)"/>
+          <ellipse cx="170" cy="118" rx="10" ry="22" fill="${dc}" stroke="${dcs}" stroke-width="2" transform="rotate(40 170 118)"/>
+          <!-- Legs out -->
+          <ellipse cx="105" cy="186" rx="18" ry="10" fill="${dc}" stroke="${dcs}" stroke-width="2" transform="rotate(-20 105 186)"/>
+          <ellipse cx="158" cy="186" rx="18" ry="10" fill="${dc}" stroke="${dcs}" stroke-width="2" transform="rotate(20 158 186)"/>
+          <!-- Head -->
+          <ellipse cx="112" cy="110" rx="36" ry="30" fill="${dc}" stroke="${dcs}" stroke-width="3"/>
+          <!-- Snout -->
+          <ellipse cx="88" cy="122" rx="16" ry="10" fill="${dcs}"/>
+          <!-- Big smile eyes -->
+          <path d="M98,102 Q108,96 118,102" stroke="#1a0a3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M118,100 Q128,94 138,100" stroke="#1a0a3a" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- Big grin -->
+          <path d="M88,124 Q104,136 118,124" stroke="#1a0a3a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M88,124 Q104,138 118,124" stroke="#FF8EC0" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <!-- Horn with disco sparkle -->
+          <polygon points="105,82 112,60 119,82" fill="${dcs}"/>
+          <circle cx="112" cy="58" r="4" fill="#FFE97A"/>
+          <!-- Wing shimmy -->
+          <path d="M155,132 Q185,108 188,130 Q190,152 165,152 Z" fill="${dcs}" stroke="${dc}" stroke-width="2"/>
+        </g>
+        <!-- Colorful pulsing circles on floor -->
+        <circle cx="80" cy="198" r="8" fill="#FFE97A" opacity="0.5" class="floor"/>
+        <circle cx="180" cy="198" r="8" fill="#FFB3DE" opacity="0.5" class="floor"/>
+      </svg>
+      <div class="boss-defeat-label">הדרקון קיבל קללת ריקוד! 💃 ניצחתם!</div>
+    </div>`;
   }
 };
 
