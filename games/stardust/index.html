@@ -746,6 +746,64 @@
     100% { transform: translateY(-8px) rotate(3deg); }
   }
 
+  /* Multiplication board overlay */
+  .mult-board-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    background: rgba(45,27,105,0.55);
+    backdrop-filter: blur(3px);
+    align-items: center;
+    justify-content: center;
+  }
+  .mult-board-overlay.open { display: flex; }
+  .mult-board {
+    background: var(--cloud);
+    border: 4px solid var(--sky);
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: 0 12px 40px rgba(45,27,105,0.4);
+    overflow: auto;
+    max-height: 90vh;
+    max-width: 95vw;
+    animation: boardPop 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes boardPop {
+    0%   { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1);   opacity: 1; }
+  }
+  .mult-board-title {
+    font-family: 'Fredoka One';
+    font-size: 22px;
+    color: var(--deep);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .mult-table {
+    border-collapse: collapse;
+    font-family: 'Fredoka One';
+    font-size: clamp(11px, 2vw, 16px);
+  }
+  .mult-table th, .mult-table td {
+    width: clamp(28px, 4vw, 40px);
+    height: clamp(28px, 4vw, 40px);
+    text-align: center;
+    border: 1px solid rgba(200,170,255,0.4);
+  }
+  .mult-table th {
+    background: var(--sky);
+    color: var(--deep);
+  }
+  .mult-table td {
+    background: white;
+    color: var(--deep);
+    transition: background 0.15s;
+  }
+  .mult-table td:hover { background: var(--stardust); cursor: default; }
+  .mult-table tr:nth-child(even) td { background: #f5f0ff; }
+  .mult-table tr:nth-child(even) td:hover { background: var(--stardust); }
+
   /* Feedback overlay */
   .feedback-overlay {
     position: absolute;
@@ -1297,7 +1355,7 @@
   <!-- Faye bubble -->
   <div class="faye-bubble">
     <div class="faye-speech" id="faye-speech"></div>
-    <svg class="faye-svg" width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-label="Faye the Fairy">
+    <svg class="faye-svg" width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-label="פתח לוח כפל" role="button" tabindex="0" onclick="GameApp.toggleMultBoard(event)" onkeydown="if(event.key==='Enter')GameApp.toggleMultBoard(event)">
       <!-- Faye the Fairy -->
       <!-- Wings (back) -->
       <ellipse cx="25" cy="42" rx="18" ry="10" fill="rgba(255,179,222,0.6)" transform="rotate(-30 25 42)"/>
@@ -1334,6 +1392,14 @@
       <circle cx="74" cy="24" r="1.5" fill="#C8AAFF" opacity="0.8"/>
       <circle cx="64" cy="18" r="1" fill="white" opacity="0.9"/>
     </svg>
+  </div>
+
+  <!-- Multiplication board overlay -->
+  <div class="mult-board-overlay" id="mult-board-overlay" onclick="GameApp.toggleMultBoard(event)">
+    <div class="mult-board" onclick="event.stopPropagation()">
+      <div class="mult-board-title">🌟 לוח הכפל של פיה ✨</div>
+      <table class="mult-table" id="mult-table"></table>
+    </div>
   </div>
 
   <!-- Feedback overlay -->
@@ -2324,6 +2390,35 @@ const GameApp = {
     toast.textContent = msg;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2500);
+  },
+
+  // ===== MULTIPLICATION BOARD =====
+  buildMultTable() {
+    const table = document.getElementById('mult-table');
+    if (!table || table.dataset.built) return;
+    let html = '<tr><th>×</th>';
+    for (let c = 1; c <= 12; c++) html += `<th>${c}</th>`;
+    html += '</tr>';
+    for (let r = 1; r <= 12; r++) {
+      html += `<tr><th>${r}</th>`;
+      for (let c = 1; c <= 12; c++) html += `<td>${r * c}</td>`;
+      html += '</tr>';
+    }
+    table.innerHTML = html;
+    table.dataset.built = '1';
+  },
+
+  toggleMultBoard(e) {
+    e.stopPropagation();
+    const overlay = document.getElementById('mult-board-overlay');
+    if (!overlay) return;
+    const opening = !overlay.classList.contains('open');
+    if (opening) {
+      GameApp.buildMultTable();
+      overlay.classList.add('open');
+    } else {
+      overlay.classList.remove('open');
+    }
   },
 
   // ===== MATCHING GAME =====
