@@ -1031,6 +1031,29 @@
   .lumi-container.droop { animation: lumiDroop 0.4s ease forwards; }
 
   /* Notification toasts */
+  /* Sound toggle button */
+  .sound-toggle {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 300;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 3px solid var(--sky);
+    background: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(45,27,105,0.2);
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sound-toggle:hover { transform: scale(1.12); box-shadow: 0 6px 20px rgba(45,27,105,0.3); }
+  .sound-toggle:active { transform: scale(0.95); }
+  .sound-toggle.muted { background: #f5f0ff; border-color: var(--blossom); }
+
   .toast {
     position: fixed;
     top: 20px;
@@ -1502,6 +1525,9 @@
   </div>
 </div>
 
+<!-- ===== SOUND TOGGLE ===== -->
+<button class="sound-toggle" id="sound-toggle" onclick="GameApp.toggleSound()" aria-label="הפעל/כבה צלילים">🔊</button>
+
 <!-- ===== TOAST ===== -->
 <div class="toast" id="toast" aria-live="polite"></div>
 
@@ -1670,6 +1696,7 @@ const Storage = {
 // ===========================
 const Audio = (() => {
   let ctx = null;
+  let muted = localStorage.getItem('stardust_muted') === '1';
   function getCtx() {
     if (!ctx) {
       try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
@@ -1677,6 +1704,7 @@ const Audio = (() => {
     return ctx;
   }
   function play(freq, duration, type='sine', vol=0.3) {
+    if (muted) return;
     const c = getCtx();
     if (!c) return;
     const osc = c.createOscillator();
@@ -1701,7 +1729,13 @@ const Audio = (() => {
       [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => play(f, 0.2), i * 120));
     },
     tick() { play(800, 0.05, 'square', 0.08); },
-    click() { play(660, 0.05, 'sine', 0.1); }
+    click() { play(660, 0.05, 'sine', 0.1); },
+    toggleMute() {
+      muted = !muted;
+      localStorage.setItem('stardust_muted', muted ? '1' : '0');
+      return muted;
+    },
+    isMuted() { return muted; }
   };
 })();
 
@@ -1829,6 +1863,12 @@ const GameApp = {
   init() {
     Storage.load();
     createSparkles('title-sparks', 30);
+
+    // Sync sound button with saved mute state
+    if (Audio.isMuted()) {
+      const btn = document.getElementById('sound-toggle');
+      if (btn) { btn.textContent = '🔇'; btn.classList.add('muted'); }
+    }
 
     // Keyboard support
     document.addEventListener('keydown', e => {
@@ -2390,6 +2430,15 @@ const GameApp = {
     toast.textContent = msg;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2500);
+  },
+
+  // ===== SOUND TOGGLE =====
+  toggleSound() {
+    const muted = Audio.toggleMute();
+    const btn = document.getElementById('sound-toggle');
+    btn.textContent = muted ? '🔇' : '🔊';
+    btn.classList.toggle('muted', muted);
+    btn.setAttribute('aria-label', muted ? 'הפעל צלילים' : 'כבה צלילים');
   },
 
   // ===== MULTIPLICATION BOARD =====
