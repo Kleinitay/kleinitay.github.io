@@ -800,8 +800,16 @@
     color: var(--deep);
     transition: background 0.15s;
   }
-  .mult-table td { cursor: default; }
+  .mult-table td { cursor: default; transition: background 0.1s, font-size 0.1s; }
   .mult-table td.cell-highlight { background: var(--stardust) !important; }
+  .mult-table td.cell-active {
+    background: #e6a800 !important;
+    color: white !important;
+    font-size: clamp(14px, 2.5vw, 20px) !important;
+    z-index: 1;
+    position: relative;
+    box-shadow: 0 0 0 2px #c48a00 inset;
+  }
   .mult-table th.col-highlight { background: #b38aff !important; }
   .mult-table th.row-highlight { background: #b38aff !important; }
   .mult-table tr:nth-child(even) td { background: #f5f0ff; }
@@ -2466,23 +2474,21 @@ const GameApp = {
       const row = td.parentElement;
       const col = td.cellIndex; // 1-based column index (0 = row header)
       // Clear previous
-      table.querySelectorAll('.cell-highlight, .col-highlight, .row-highlight').forEach(el => {
-        el.classList.remove('cell-highlight', 'col-highlight', 'row-highlight');
+      table.querySelectorAll('.cell-highlight, .cell-active, .col-highlight, .row-highlight').forEach(el => {
+        el.classList.remove('cell-highlight', 'cell-active', 'col-highlight', 'row-highlight');
       });
-      // Highlight all cells in same row
+      // Highlight all cells in same row and column (lighter)
       Array.from(row.cells).forEach(c => { if (c !== td) c.classList.add('cell-highlight'); });
-      // Highlight all cells in same column
       Array.from(rows).forEach(r => { const c = r.cells[col]; if (c && c !== td && c.tagName === 'TD') c.classList.add('cell-highlight'); });
-      // Highlight row header (first cell of same row)
+      // Highlight row + column headers
       row.cells[0].classList.add('row-highlight');
-      // Highlight column header (first row, same column)
       if (rows[0] && rows[0].cells[col]) rows[0].cells[col].classList.add('col-highlight');
-      // Highlight the hovered cell itself
-      td.classList.add('cell-highlight');
+      // Hovered cell gets darker + bigger treatment
+      td.classList.add('cell-active');
     });
     table.addEventListener('mouseleave', () => {
-      table.querySelectorAll('.cell-highlight, .col-highlight, .row-highlight').forEach(el => {
-        el.classList.remove('cell-highlight', 'col-highlight', 'row-highlight');
+      table.querySelectorAll('.cell-highlight, .cell-active, .col-highlight, .row-highlight').forEach(el => {
+        el.classList.remove('cell-highlight', 'cell-active', 'col-highlight', 'row-highlight');
       });
     });
   },
