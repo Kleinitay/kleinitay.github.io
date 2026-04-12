@@ -800,9 +800,11 @@
     color: var(--deep);
     transition: background 0.15s;
   }
-  .mult-table td:hover { background: var(--stardust); cursor: default; }
+  .mult-table td { cursor: default; }
+  .mult-table td.cell-highlight { background: var(--stardust) !important; }
+  .mult-table th.col-highlight { background: #b38aff !important; }
+  .mult-table th.row-highlight { background: #b38aff !important; }
   .mult-table tr:nth-child(even) td { background: #f5f0ff; }
-  .mult-table tr:nth-child(even) td:hover { background: var(--stardust); }
 
   /* Feedback overlay */
   .feedback-overlay {
@@ -1559,7 +1561,7 @@ const CONFIG = {
       color: "world-theme-3", textColor: "#ffffff",
       story: "יער הפיות מלא בפטריות קסומות! לכל אחת יש מספר מסתורי. השתמשו בכוחות ×5 ו-×6 שלכם כדי לפתוח את הדרך! 🌿",
       stageTypes: ['A', 'B', 'C', 'E', 'BOSS'],
-      timer: 20, choices: 4
+      timer: 21, choices: 4
     },
     {
       id: 4, name: "נהר הקשת", emoji: "🌈",
@@ -1567,7 +1569,7 @@ const CONFIG = {
       color: "world-theme-4", textColor: "#ffffff",
       story: "גשר הקשת שבור! לכל חלק יש מספר סודי. לומי צריכה את כוחות ×7 ו-×8 שלכם כדי לבנות אותו מחדש! 🌈",
       stageTypes: ['A', 'C', 'D', 'E', 'BOSS'],
-      timer: 15, choices: 4
+      timer: 16, choices: 4
     },
     {
       id: 5, name: "ממלכת העננים", emoji: "☁️",
@@ -1575,7 +1577,7 @@ const CONFIG = {
       color: "world-theme-5", textColor: "#2d1b69",
       story: "גבוה מעל העננים, ממלכת העננים מרחפת בשמים! שלטו ב-×9 ו-×10 כדי לפתוח שערי הטירה. ✨",
       stageTypes: ['A', 'C', 'D', 'E', 'BOSS'],
-      timer: 12, choices: 4
+      timer: 13, choices: 4
     },
     {
       id: 6, name: "פסגת אבק הכוכבים", emoji: "🌟",
@@ -1583,7 +1585,7 @@ const CONFIG = {
       color: "world-theme-6", textColor: "#ffffff",
       story: "בראש פסגת אבק הכוכבים, ×11 ו-×12 שומרים על סודות היקום! לומי ופיה סומכות עליכם! 🌟",
       stageTypes: ['A', 'C', 'D', 'E', 'BOSS'],
-      timer: 12, choices: 4
+      timer: 13, choices: 4
     },
     {
       id: 7, name: "המסע הגדול", emoji: "🏆",
@@ -1591,7 +1593,7 @@ const CONFIG = {
       color: "world-theme-7", textColor: "#ffffff",
       story: "דרקון אבק הכוכבים הפזיל כוכבי מתמטיקה על כל העולמות! רק אמן כפל אמיתי יכול לאסוף אותם בחזרה! 🐉",
       stageTypes: ['A', 'D', 'C', 'E', 'BOSS'],
-      timer: 10, choices: 4
+      timer: 11, choices: 4
     }
   ],
   praiseMessages: [
@@ -2455,6 +2457,34 @@ const GameApp = {
     }
     table.innerHTML = html;
     table.dataset.built = '1';
+
+    // Row + column highlight on hover
+    const rows = table.rows;
+    table.addEventListener('mouseover', e => {
+      const td = e.target.closest('td');
+      if (!td) return;
+      const row = td.parentElement;
+      const col = td.cellIndex; // 1-based column index (0 = row header)
+      // Clear previous
+      table.querySelectorAll('.cell-highlight, .col-highlight, .row-highlight').forEach(el => {
+        el.classList.remove('cell-highlight', 'col-highlight', 'row-highlight');
+      });
+      // Highlight all cells in same row
+      Array.from(row.cells).forEach(c => { if (c !== td) c.classList.add('cell-highlight'); });
+      // Highlight all cells in same column
+      Array.from(rows).forEach(r => { const c = r.cells[col]; if (c && c !== td && c.tagName === 'TD') c.classList.add('cell-highlight'); });
+      // Highlight row header (first cell of same row)
+      row.cells[0].classList.add('row-highlight');
+      // Highlight column header (first row, same column)
+      if (rows[0] && rows[0].cells[col]) rows[0].cells[col].classList.add('col-highlight');
+      // Highlight the hovered cell itself
+      td.classList.add('cell-highlight');
+    });
+    table.addEventListener('mouseleave', () => {
+      table.querySelectorAll('.cell-highlight, .col-highlight, .row-highlight').forEach(el => {
+        el.classList.remove('cell-highlight', 'col-highlight', 'row-highlight');
+      });
+    });
   },
 
   toggleMultBoard(e) {
